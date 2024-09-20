@@ -11,5 +11,4 @@ type Pet struct {
 	Breed       string    `json:"breed"`
 	DateOfBirth time.Time `json:"date_of_birth"`
 	ClientID    uint      `json:"client_id"`
-	Client      Client    `gorm:"foreignKey:ClientID"`
 }
