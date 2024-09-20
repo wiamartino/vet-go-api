@@ -7,4 +7,5 @@ type Client struct {
 	Address   string `json:"address"`
 	Phone     string `json:"phone"`
 	Email     string `json:"email"`
+	Pets      []Pet  `gorm:"foreignKey:ClientID" json:"pets"`
 }
