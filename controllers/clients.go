@@ -31,7 +31,7 @@ func CreateClient(c *gin.Context) {
 
 func FindClient(c *gin.Context) {
 	var client models.Client
-	if err := config.DB.First(&client, c.Param("id")).Error; err != nil {
+	if err := config.DB.Preload("Pets").First(&client, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Client not found"})
 		return
 	}
