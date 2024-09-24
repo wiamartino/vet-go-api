@@ -54,5 +54,12 @@ func SetupRouter() *gin.Engine {
 	r.PUT("/invoices/:id", controllers.UpdateInvoice)
 	r.DELETE("/invoices/:id", controllers.DeleteInvoice)
 
+	// Medication routes
+	r.POST("/medications", controllers.CreateMedication)
+	r.GET("/medications", controllers.FindMedications)
+	r.GET("/medications/:id", controllers.FindMedication)
+	r.PUT("/medications/:id", controllers.UpdateMedication)
+	r.DELETE("/medications/:id", controllers.DeleteMedication)
+
 	return r
 }
