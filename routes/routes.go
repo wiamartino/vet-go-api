@@ -2,6 +2,7 @@ package routes
 
 import (
 	"go-vet/controllers"
+	"go-vet/middlewares"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,54 +13,60 @@ func SetupRouter() *gin.Engine {
 	r.POST("/register", controllers.Register)
 	r.POST("/login", controllers.Login)
 
-	// Client routes
-	r.GET("/clients", controllers.FindClients)
-	r.POST("/clients", controllers.CreateClient)
-	r.GET("/clients/:id", controllers.FindClient)
-	r.PUT("/clients/:id", controllers.UpdateClient)
-	r.DELETE("/clients/:id", controllers.DeleteClient)
+	authorized := r.Group("/")
+	authorized.Use(middlewares.AuthMiddleware())
+	{
 
-	// Pet routes
-	r.GET("/pets", controllers.FindPets)
-	r.POST("/pets", controllers.CreatePet)
-	r.GET("/pets/:id", controllers.FindPet)
-	r.PUT("/pets/:id", controllers.UpdatePet)
-	r.DELETE("/pets/:id", controllers.DeletePet)
+		// Client routes
+		authorized.GET("/clients", controllers.FindClients)
+		authorized.POST("/clients", controllers.CreateClient)
+		authorized.GET("/clients/:id", controllers.FindClient)
+		authorized.PUT("/clients/:id", controllers.UpdateClient)
+		authorized.DELETE("/clients/:id", controllers.DeleteClient)
 
-	// Veterinarian routes
-	r.GET("/veterinarians", controllers.FindVeterinarians)
-	r.POST("/veterinarians", controllers.CreateVeterinarian)
-	r.GET("/veterinarians/:id", controllers.FindVeterinarian)
-	r.PUT("/veterinarians/:id", controllers.UpdateVeterinarian)
-	r.DELETE("/veterinarians/:id", controllers.DeleteVeterinarian)
+		// Pet routes
+		authorized.GET("/pets", controllers.FindPets)
+		authorized.POST("/pets", controllers.CreatePet)
+		authorized.GET("/pets/:id", controllers.FindPet)
+		authorized.PUT("/pets/:id", controllers.UpdatePet)
+		authorized.DELETE("/pets/:id", controllers.DeletePet)
 
-	// Appointment routes
-	r.GET("/appointments", controllers.FindAppointments)
-	r.POST("/appointments", controllers.CreateAppointment)
-	r.GET("/appointments/:id", controllers.FindAppointment)
-	r.PUT("/appointments/:id", controllers.UpdateAppointment)
-	r.DELETE("/appointments/:id", controllers.DeleteAppointment)
+		// Veterinarian routes
+		authorized.GET("/veterinarians", controllers.FindVeterinarians)
+		authorized.POST("/veterinarians", controllers.CreateVeterinarian)
+		authorized.GET("/veterinarians/:id", controllers.FindVeterinarian)
+		authorized.PUT("/veterinarians/:id", controllers.UpdateVeterinarian)
+		authorized.DELETE("/veterinarians/:id", controllers.DeleteVeterinarian)
 
-	// Treatment routes
-	r.GET("/treatments", controllers.FindTreatments)
-	r.POST("/treatments", controllers.CreateTreatment)
-	r.GET("/treatments/:id", controllers.FindTreatment)
-	r.PUT("/treatments/:id", controllers.UpdateTreatment)
-	r.DELETE("/treatments/:id", controllers.DeleteTreatment)
+		// Appointment routes
+		authorized.GET("/appointments", controllers.FindAppointments)
+		authorized.POST("/appointments", controllers.CreateAppointment)
+		authorized.GET("/appointments/:id", controllers.FindAppointment)
+		authorized.PUT("/appointments/:id", controllers.UpdateAppointment)
+		authorized.DELETE("/appointments/:id", controllers.DeleteAppointment)
 
-	// Invoice routes
-	r.GET("/invoices", controllers.FindInvoices)
-	r.POST("/invoices", controllers.CreateInvoice)
-	r.GET("/invoices/:id", controllers.FindInvoice)
-	r.PUT("/invoices/:id", controllers.UpdateInvoice)
-	r.DELETE("/invoices/:id", controllers.DeleteInvoice)
+		// Treatment routes
+		authorized.GET("/treatments", controllers.FindTreatments)
+		authorized.POST("/treatments", controllers.CreateTreatment)
+		authorized.GET("/treatments/:id", controllers.FindTreatment)
+		authorized.PUT("/treatments/:id", controllers.UpdateTreatment)
+		authorized.DELETE("/treatments/:id", controllers.DeleteTreatment)
 
-	// Medication routes
-	r.POST("/medications", controllers.CreateMedication)
-	r.GET("/medications", controllers.FindMedications)
-	r.GET("/medications/:id", controllers.FindMedication)
-	r.PUT("/medications/:id", controllers.UpdateMedication)
-	r.DELETE("/medications/:id", controllers.DeleteMedication)
+		// Invoice routes
+		authorized.GET("/invoices", controllers.FindInvoices)
+		authorized.POST("/invoices", controllers.CreateInvoice)
+		authorized.GET("/invoices/:id", controllers.FindInvoice)
+		authorized.PUT("/invoices/:id", controllers.UpdateInvoice)
+		authorized.DELETE("/invoices/:id", controllers.DeleteInvoice)
+
+		// Medication routes
+		authorized.POST("/medications", controllers.CreateMedication)
+		authorized.GET("/medications", controllers.FindMedications)
+		authorized.GET("/medications/:id", controllers.FindMedication)
+		authorized.PUT("/medications/:id", controllers.UpdateMedication)
+		authorized.DELETE("/medications/:id", controllers.DeleteMedication)
+
+	}
 
 	return r
 }
