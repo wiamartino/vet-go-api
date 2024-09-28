@@ -67,6 +67,9 @@ func (ctrl *ClientController) UpdateClient(c *gin.Context) {
 		return
 	}
 
+	clientID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	client.ClientID = uint(clientID)
+
 	if err := ctrl.service.UpdateClient(&client); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

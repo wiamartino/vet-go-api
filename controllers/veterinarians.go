@@ -59,6 +59,8 @@ func (ctrl *VeterinarianController) UpdateVeterinarian(c *gin.Context) {
 		return
 	}
 
+	veterinarianID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	veterinarian.VeterinarianID = uint(veterinarianID)
 	if err := ctrl.service.UpdateVeterinarian(&veterinarian); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

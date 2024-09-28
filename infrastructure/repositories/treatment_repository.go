@@ -34,7 +34,10 @@ func (r *TreatmentRepository) Create(treatment *domain.Treatment) error {
 }
 
 func (r *TreatmentRepository) Update(treatment *domain.Treatment) error {
-	return r.db.Save(&treatment).Error
+	if err := r.db.Save(treatment).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *TreatmentRepository) Delete(id uint) error {

@@ -61,6 +61,9 @@ func (ctrl *AppointmentController) UpdateAppointment(c *gin.Context) {
 		return
 	}
 
+	appointmentID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	appointment.AppointmentID = uint(appointmentID)
+
 	if err := ctrl.service.UpdateAppointment(&appointment); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

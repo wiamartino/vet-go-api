@@ -59,7 +59,8 @@ func (ctrl *TreatmentController) UpdateTreatment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
+	treatmentID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	treatment.TreatmentID = uint(treatmentID)
 	if err := ctrl.service.UpdateTreatment(&treatment); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

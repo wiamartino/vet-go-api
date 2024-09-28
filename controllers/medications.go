@@ -66,6 +66,8 @@ func (ctrl *MedicationController) UpdateMedication(c *gin.Context) {
 		return
 	}
 
+	medicationID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	medication.ID = uint(medicationID)
 	if err := ctrl.service.UpdateMedication(&medication); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

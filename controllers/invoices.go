@@ -65,6 +65,8 @@ func (ctrl *InvoiceController) UpdateInvoice(c *gin.Context) {
 		return
 	}
 
+	invoiceID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	invoice.InvoiceID = uint(invoiceID)
 	if err := ctrl.service.UpdateInvoice(&invoice); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -59,6 +59,8 @@ func (ctrl *PetController) UpdatePet(c *gin.Context) {
 		return
 	}
 
+	petID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	pet.PetID = uint(petID)
 	err := ctrl.service.UpdatePet(&pet)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
