@@ -33,7 +33,7 @@ func (ctrl *TreatmentController) CreateTreatment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := ctrl.service.CreateTreatment(treatment); err != nil {
+	if err := ctrl.service.CreateTreatment(&treatment); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -60,7 +60,7 @@ func (ctrl *TreatmentController) UpdateTreatment(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.UpdateTreatment(treatment); err != nil {
+	if err := ctrl.service.UpdateTreatment(&treatment); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

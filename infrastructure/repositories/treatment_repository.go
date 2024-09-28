@@ -29,11 +29,11 @@ func (r *TreatmentRepository) FindByID(id uint) (domain.Treatment, error) {
 	return treatment, nil
 }
 
-func (r *TreatmentRepository) Create(treatment domain.Treatment) error {
+func (r *TreatmentRepository) Create(treatment *domain.Treatment) error {
 	return r.db.Create(&treatment).Error
 }
 
-func (r *TreatmentRepository) Update(treatment domain.Treatment) error {
+func (r *TreatmentRepository) Update(treatment *domain.Treatment) error {
 	return r.db.Save(&treatment).Error
 }
 

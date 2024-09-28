@@ -29,11 +29,11 @@ func (r *VeterinarianRepository) FindByID(id uint) (domain.Veterinarian, error) 
 	return veterinarian, nil
 }
 
-func (r *VeterinarianRepository) Create(veterinarian domain.Veterinarian) error {
+func (r *VeterinarianRepository) Create(veterinarian *domain.Veterinarian) error {
 	return r.db.Create(&veterinarian).Error
 }
 
-func (r *VeterinarianRepository) Update(veterinarian domain.Veterinarian) error {
+func (r *VeterinarianRepository) Update(veterinarian *domain.Veterinarian) error {
 	return r.db.Save(&veterinarian).Error
 }
 

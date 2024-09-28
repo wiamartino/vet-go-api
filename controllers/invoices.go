@@ -34,7 +34,7 @@ func (ctrl *InvoiceController) CreateInvoice(c *gin.Context) {
 		return
 	}
 
-	err := ctrl.service.CreateInvoice(invoice)
+	err := ctrl.service.CreateInvoice(&invoice)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -65,7 +65,7 @@ func (ctrl *InvoiceController) UpdateInvoice(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.UpdateInvoice(invoice); err != nil {
+	if err := ctrl.service.UpdateInvoice(&invoice); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

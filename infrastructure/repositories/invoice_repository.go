@@ -29,11 +29,11 @@ func (r *InvoiceRepository) FindByID(id uint) (domain.Invoice, error) {
 	return invoice, nil
 }
 
-func (r *InvoiceRepository) Create(invoice domain.Invoice) error {
+func (r *InvoiceRepository) Create(invoice *domain.Invoice) error {
 	return r.db.Create(&invoice).Error
 }
 
-func (r *InvoiceRepository) Update(invoice domain.Invoice) error {
+func (r *InvoiceRepository) Update(invoice *domain.Invoice) error {
 	return r.db.Save(&invoice).Error
 }
 

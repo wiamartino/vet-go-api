@@ -18,7 +18,7 @@ type Appointment struct {
 type AppointmentRepository interface {
 	FindAll() ([]Appointment, error)
 	FindByID(id uint) (Appointment, error)
-	Create(appointment Appointment) error
-	Update(appointment Appointment) error
+	Create(appointment *Appointment) error
+	Update(appointment *Appointment) error
 	Delete(id uint) error
 }

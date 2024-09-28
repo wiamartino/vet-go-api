@@ -10,7 +10,7 @@ type Treatment struct {
 type TreatmentRepository interface {
 	FindAll() ([]Treatment, error)
 	FindByID(id uint) (Treatment, error)
-	Create(treatment Treatment) error
-	Update(treatment Treatment) error
+	Create(treatment *Treatment) error
+	Update(treatment *Treatment) error
 	Delete(id uint) error
 }

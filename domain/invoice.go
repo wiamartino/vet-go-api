@@ -17,7 +17,7 @@ type Invoice struct {
 type InvoiceRepository interface {
 	FindAll() ([]Invoice, error)
 	FindByID(id uint) (Invoice, error)
-	Create(invoice Invoice) error
-	Update(invoice Invoice) error
+	Create(invoice *Invoice) error
+	Update(invoice *Invoice) error
 	Delete(id uint) error
 }

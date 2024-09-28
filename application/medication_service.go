@@ -18,11 +18,11 @@ func (s *MedicationService) GetMedicationByID(id uint) (domain.Medication, error
 	return s.repo.FindByID(id)
 }
 
-func (s *MedicationService) CreateMedication(medication domain.Medication) error {
+func (s *MedicationService) CreateMedication(medication *domain.Medication) error {
 	return s.repo.Create(medication)
 }
 
-func (s *MedicationService) UpdateMedication(medication domain.Medication) error {
+func (s *MedicationService) UpdateMedication(medication *domain.Medication) error {
 	return s.repo.Update(medication)
 }
 

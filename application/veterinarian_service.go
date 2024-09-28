@@ -18,11 +18,11 @@ func (s *VeterinarianService) GetVeterinarianByID(id uint) (domain.Veterinarian,
 	return s.repo.FindByID(id)
 }
 
-func (s *VeterinarianService) CreateVeterinarian(veterinarian domain.Veterinarian) error {
+func (s *VeterinarianService) CreateVeterinarian(veterinarian *domain.Veterinarian) error {
 	return s.repo.Create(veterinarian)
 }
 
-func (s *VeterinarianService) UpdateVeterinarian(veterinarian domain.Veterinarian) error {
+func (s *VeterinarianService) UpdateVeterinarian(veterinarian *domain.Veterinarian) error {
 	return s.repo.Update(veterinarian)
 }
 

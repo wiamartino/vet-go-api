@@ -18,11 +18,11 @@ func (s *InvoiceService) GetInvoiceByID(id uint) (domain.Invoice, error) {
 	return s.repo.FindByID(id)
 }
 
-func (s *InvoiceService) CreateInvoice(invoice domain.Invoice) error {
+func (s *InvoiceService) CreateInvoice(invoice *domain.Invoice) error {
 	return s.repo.Create(invoice)
 }
 
-func (s *InvoiceService) UpdateInvoice(invoice domain.Invoice) error {
+func (s *InvoiceService) UpdateInvoice(invoice *domain.Invoice) error {
 	return s.repo.Update(invoice)
 }
 

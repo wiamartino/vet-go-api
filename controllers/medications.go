@@ -34,7 +34,7 @@ func (ctrl *MedicationController) CreateMedication(c *gin.Context) {
 		return
 	}
 
-	err := ctrl.service.CreateMedication(medication)
+	err := ctrl.service.CreateMedication(&medication)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -66,7 +66,7 @@ func (ctrl *MedicationController) UpdateMedication(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.UpdateMedication(medication); err != nil {
+	if err := ctrl.service.UpdateMedication(&medication); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

@@ -33,7 +33,7 @@ func (ctrl *PetController) CreatePet(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := ctrl.service.CreatePet(pet); err != nil {
+	if err := ctrl.service.CreatePet(&pet); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -59,7 +59,7 @@ func (ctrl *PetController) UpdatePet(c *gin.Context) {
 		return
 	}
 
-	err := ctrl.service.UpdatePet(pet)
+	err := ctrl.service.UpdatePet(&pet)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -18,11 +18,11 @@ func (s *TreatmentService) GetTreatmentByID(id uint) (domain.Treatment, error) {
 	return s.repo.FindByID(id)
 }
 
-func (s *TreatmentService) CreateTreatment(treatment domain.Treatment) error {
+func (s *TreatmentService) CreateTreatment(treatment *domain.Treatment) error {
 	return s.repo.Create(treatment)
 }
 
-func (s *TreatmentService) UpdateTreatment(treatment domain.Treatment) error {
+func (s *TreatmentService) UpdateTreatment(treatment *domain.Treatment) error {
 	return s.repo.Update(treatment)
 }
 

@@ -33,7 +33,7 @@ func (ctrl *ClientController) CreateClient(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.CreateClient(client); err != nil {
+	if err := ctrl.service.CreateClient(&client); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -67,7 +67,7 @@ func (ctrl *ClientController) UpdateClient(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.UpdateClient(client); err != nil {
+	if err := ctrl.service.UpdateClient(&client); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

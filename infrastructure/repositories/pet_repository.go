@@ -29,11 +29,11 @@ func (r *PetRepository) FindByID(id uint) (domain.Pet, error) {
 	return pet, nil
 }
 
-func (r *PetRepository) Create(pet domain.Pet) error {
+func (r *PetRepository) Create(pet *domain.Pet) error {
 	return r.db.Create(&pet).Error
 }
 
-func (r *PetRepository) Update(pet domain.Pet) error {
+func (r *PetRepository) Update(pet *domain.Pet) error {
 	return r.db.Save(&pet).Error
 }
 

@@ -29,11 +29,11 @@ func (r *ClientRepository) FindByID(id uint) (domain.Client, error) {
 	return client, nil
 }
 
-func (r *ClientRepository) Create(client domain.Client) error {
+func (r *ClientRepository) Create(client *domain.Client) error {
 	return r.db.Create(&client).Error
 }
 
-func (r *ClientRepository) Update(client domain.Client) error {
+func (r *ClientRepository) Update(client *domain.Client) error {
 	return r.db.Save(&client).Error
 }
 

@@ -29,11 +29,11 @@ func (r *AppointmentRepository) FindByID(id uint) (domain.Appointment, error) {
 	return appointment, nil
 }
 
-func (r *AppointmentRepository) Create(appointment domain.Appointment) error {
+func (r *AppointmentRepository) Create(appointment *domain.Appointment) error {
 	return r.db.Create(&appointment).Error
 }
 
-func (r *AppointmentRepository) Update(appointment domain.Appointment) error {
+func (r *AppointmentRepository) Update(appointment *domain.Appointment) error {
 	return r.db.Save(&appointment).Error
 }
 

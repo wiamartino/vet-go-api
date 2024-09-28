@@ -32,7 +32,7 @@ func (ctrl *VeterinarianController) CreateVeterinarian(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := ctrl.service.CreateVeterinarian(veterinarian); err != nil {
+	if err := ctrl.service.CreateVeterinarian(&veterinarian); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create veterinarian"})
 		return
 	}
@@ -59,7 +59,7 @@ func (ctrl *VeterinarianController) UpdateVeterinarian(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.UpdateVeterinarian(veterinarian); err != nil {
+	if err := ctrl.service.UpdateVeterinarian(&veterinarian); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

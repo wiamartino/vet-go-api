@@ -12,7 +12,7 @@ type Veterinarian struct {
 type VeterinarianRepository interface {
 	FindAll() ([]Veterinarian, error)
 	FindByID(id uint) (Veterinarian, error)
-	Create(veterinarian Veterinarian) error
-	Update(veterinarian Veterinarian) error
+	Create(veterinarian *Veterinarian) error
+	Update(veterinarian *Veterinarian) error
 	Delete(id uint) error
 }

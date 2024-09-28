@@ -18,11 +18,11 @@ func (s *AppointmentService) GetAppointmentByID(id uint) (domain.Appointment, er
 	return s.repo.FindByID(id)
 }
 
-func (s *AppointmentService) CreateAppointment(appointment domain.Appointment) error {
+func (s *AppointmentService) CreateAppointment(appointment *domain.Appointment) error {
 	return s.repo.Create(appointment)
 }
 
-func (s *AppointmentService) UpdateAppointment(appointment domain.Appointment) error {
+func (s *AppointmentService) UpdateAppointment(appointment *domain.Appointment) error {
 	return s.repo.Update(appointment)
 }
 

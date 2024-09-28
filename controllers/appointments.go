@@ -33,7 +33,7 @@ func (ctrl *AppointmentController) CreateAppointment(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.CreateAppointment(appointment); err != nil {
+	if err := ctrl.service.CreateAppointment(&appointment); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -61,7 +61,7 @@ func (ctrl *AppointmentController) UpdateAppointment(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.UpdateAppointment(appointment); err != nil {
+	if err := ctrl.service.UpdateAppointment(&appointment); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

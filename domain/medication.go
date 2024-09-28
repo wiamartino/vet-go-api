@@ -10,7 +10,7 @@ type Medication struct {
 type MedicationRepository interface {
 	FindAll() ([]Medication, error)
 	FindByID(id uint) (Medication, error)
-	Create(medication Medication) error
-	Update(medication Medication) error
+	Create(medication *Medication) error
+	Update(medication *Medication) error
 	Delete(id uint) error
 }

@@ -16,7 +16,7 @@ type Pet struct {
 type PetRepository interface {
 	FindAll() ([]Pet, error)
 	FindByID(id uint) (Pet, error)
-	Create(pet Pet) error
-	Update(pet Pet) error
+	Create(pet *Pet) error
+	Update(pet *Pet) error
 	Delete(id uint) error
 }

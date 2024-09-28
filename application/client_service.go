@@ -18,11 +18,11 @@ func (s *ClientService) GetClientByID(id uint) (domain.Client, error) {
 	return s.repo.FindByID(id)
 }
 
-func (s *ClientService) CreateClient(client domain.Client) error {
+func (s *ClientService) CreateClient(client *domain.Client) error {
 	return s.repo.Create(client)
 }
 
-func (s *ClientService) UpdateClient(client domain.Client) error {
+func (s *ClientService) UpdateClient(client *domain.Client) error {
 	return s.repo.Update(client)
 }
 

@@ -18,11 +18,11 @@ func (s *PetService) GetPetByID(id uint) (domain.Pet, error) {
 	return s.repo.FindByID(id)
 }
 
-func (s *PetService) CreatePet(pet domain.Pet) error {
+func (s *PetService) CreatePet(pet *domain.Pet) error {
 	return s.repo.Create(pet)
 }
 
-func (s *PetService) UpdatePet(pet domain.Pet) error {
+func (s *PetService) UpdatePet(pet *domain.Pet) error {
 	return s.repo.Update(pet)
 }
 
