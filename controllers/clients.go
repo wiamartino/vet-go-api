@@ -1,27 +1,39 @@
 package controllers
 
 import (
-	"go-vet/config"
-	"go-vet/models"
+	"go-vet/application"
+	"go-vet/domain"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func FindClients(c *gin.Context) {
-	var clients []models.Client
-	config.DB.Find(&clients)
+type ClientController struct {
+	service *application.ClientService
+}
+
+func NewClientController(service *application.ClientService) *ClientController {
+	return &ClientController{service: service}
+}
+
+func (ctrl *ClientController) FindClients(c *gin.Context) {
+	clients, err := ctrl.service.GetAllClients()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, clients)
 }
 
-func CreateClient(c *gin.Context) {
-	var client models.Client
+func (ctrl *ClientController) CreateClient(c *gin.Context) {
+	var client domain.Client
 	if err := c.ShouldBindJSON(&client); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := config.DB.Create(&client).Error; err != nil {
+	if err := ctrl.service.CreateClient(client); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -29,40 +41,50 @@ func CreateClient(c *gin.Context) {
 	c.JSON(http.StatusOK, client)
 }
 
-func FindClient(c *gin.Context) {
-	var client models.Client
-	if err := config.DB.Preload("Pets").First(&client, c.Param("id")).Error; err != nil {
+func (ctrl *ClientController) FindClient(c *gin.Context) {
+
+	clientID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client ID"})
+		return
+	}
+
+	client, err := ctrl.service.GetClientByID(uint(clientID))
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Client not found"})
 		return
 	}
+
 	c.JSON(http.StatusOK, client)
 }
 
-func UpdateClient(c *gin.Context) {
-	var client models.Client
-	if err := config.DB.First(&client, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Client not found"})
-		return
-	}
+func (ctrl *ClientController) UpdateClient(c *gin.Context) {
+
+	var client domain.Client
+
 	if err := c.ShouldBindJSON(&client); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := config.DB.Save(&client).Error; err != nil {
+
+	if err := ctrl.service.UpdateClient(client); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, client)
+
 }
 
-func DeleteClient(c *gin.Context) {
-	var client models.Client
-	if err := config.DB.First(&client, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Client not found"})
+func (ctrl *ClientController) DeleteClient(c *gin.Context) {
+
+	clientID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client ID"})
 		return
 	}
-	if err := config.DB.Delete(&client).Error; err != nil {
+
+	if err = ctrl.service.DeleteClient(uint(clientID)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

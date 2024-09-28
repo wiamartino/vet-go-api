@@ -1,65 +1,82 @@
 package controllers
 
 import (
-	"go-vet/config"
-	"go-vet/models"
+	"go-vet/application"
+	"go-vet/domain"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func FindVeterinarians(c *gin.Context) {
-	var veterinarians []models.Veterinarian
-	config.DB.Find(&veterinarians)
+type VeterinarianController struct {
+	service *application.VeterinarianService
+}
+
+func NewVeterinarianController(service *application.VeterinarianService) *VeterinarianController {
+	return &VeterinarianController{service: service}
+}
+
+func (ctrl *VeterinarianController) FindVeterinarians(c *gin.Context) {
+	veterinarians, err := ctrl.service.GetAllVeterinarians()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch veterinarians"})
+		return
+	}
 	c.JSON(http.StatusOK, veterinarians)
 }
 
-func CreateVeterinarian(c *gin.Context) {
-	var veterinarian models.Veterinarian
+func (ctrl *VeterinarianController) CreateVeterinarian(c *gin.Context) {
+	var veterinarian domain.Veterinarian
 	if err := c.ShouldBindJSON(&veterinarian); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := config.DB.Create(&veterinarian).Error; err != nil {
+	if err := ctrl.service.CreateVeterinarian(veterinarian); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create veterinarian"})
 		return
 	}
 	c.JSON(http.StatusOK, veterinarian)
 }
 
-func FindVeterinarian(c *gin.Context) {
-	var veterinarian models.Veterinarian
-	if err := config.DB.First(&veterinarian, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Veterinarian not found"})
+func (ctrl *VeterinarianController) FindVeterinarian(c *gin.Context) {
+	idParam, _ := strconv.Atoi(c.Param("id"))
+	id := uint(idParam)
+	veterinarian, err := ctrl.service.GetVeterinarianByID(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, veterinarian)
 }
 
-func UpdateVeterinarian(c *gin.Context) {
-	var veterinarian models.Veterinarian
-	if err := config.DB.First(&veterinarian, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Veterinarian not found"})
-		return
-	}
+func (ctrl *VeterinarianController) UpdateVeterinarian(c *gin.Context) {
+
+	var veterinarian domain.Veterinarian
+
 	if err := c.ShouldBindJSON(&veterinarian); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := config.DB.Save(&veterinarian).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update veterinarian"})
+
+	if err := ctrl.service.UpdateVeterinarian(veterinarian); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, veterinarian)
 }
 
-func DeleteVeterinarian(c *gin.Context) {
-	var veterinarian models.Veterinarian
-	if err := config.DB.First(&veterinarian, c.Param("id")).Error; err != nil {
+func (ctrl *VeterinarianController) DeleteVeterinarian(c *gin.Context) {
+
+	idParam, _ := strconv.Atoi(c.Param("id"))
+	id := uint(idParam)
+	if _, err := ctrl.service.GetVeterinarianByID(id); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Veterinarian not found"})
 		return
 	}
-	if err := config.DB.Delete(&veterinarian).Error; err != nil {
+
+	if err := ctrl.service.DeleteVeterinarian(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete veterinarian"})
 		return
 	}

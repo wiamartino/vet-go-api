@@ -1,15 +1,13 @@
 package controllers
 
 import (
-	"go-vet/config"
-	"go-vet/models"
+	"go-vet/application"
+	"go-vet/domain"
 	"net/http"
-
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/golang-jwt/jwt"
 )
 
 var jwtKey = []byte("your_secret_key")
@@ -36,48 +34,41 @@ func GenerateToken(email string) (string, error) {
 	return tokenString, nil
 }
 
-func Register(c *gin.Context) {
-	var user models.User
+type AuthController struct {
+	service *application.UserService
+}
+
+func NewAuthController(service *application.UserService) *AuthController {
+	return &AuthController{service: service}
+}
+
+func (ctrl *AuthController) Register(c *gin.Context) {
+	var user domain.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	var existingUser models.User
-	if err := config.DB.Where("email = ?", user.Email).First(&existingUser).Error; err == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
-		return
-	}
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
-		return
-	}
-	user.Password = string(hashedPassword)
-
-	if err := config.DB.Create(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+	if err := ctrl.service.Register(user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
 }
 
-func Login(c *gin.Context) {
-	var user models.User
-	var input models.User
-	if err := c.ShouldBindJSON(&input); err != nil {
+func (ctrl *AuthController) Login(c *gin.Context) {
+	var credentials struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if err := c.ShouldBindJSON(&credentials); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := config.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
-		return
-	}
-
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
+	user, err := ctrl.service.Login(credentials.Email, credentials.Password)
+	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
@@ -90,3 +81,58 @@ func Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
+
+// func Register(c *gin.Context) {
+// 	var user domain.User
+// 	if err := c.ShouldBindJSON(&user); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 		return
+// 	}
+
+// 	var existingUser domain.User
+// 	if err := config.DB.Where("email = ?", user.Email).First(&existingUser).Error; err == nil {
+// 		c.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
+// 		return
+// 	}
+
+// 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+// 		return
+// 	}
+// 	user.Password = string(hashedPassword)
+
+// 	if err := config.DB.Create(&user).Error; err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+// 		return
+// 	}
+
+// 	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
+// }
+
+// func Login(c *gin.Context) {
+// 	var user domain.User
+// 	var input domain.User
+// 	if err := c.ShouldBindJSON(&input); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 		return
+// 	}
+
+// 	if err := config.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
+// 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+// 		return
+// 	}
+
+// 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
+// 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+// 		return
+// 	}
+
+// 	token, err := GenerateToken(user.Email)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+// 		return
+// 	}
+
+// 	c.JSON(http.StatusOK, gin.H{"token": token})
+// }

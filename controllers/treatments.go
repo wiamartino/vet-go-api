@@ -1,66 +1,78 @@
 package controllers
 
 import (
-	"go-vet/config"
-	"go-vet/models"
+	"go-vet/application"
+	"go-vet/domain"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func FindTreatments(c *gin.Context) {
-	var treatments []models.Treatment
-	config.DB.Find(&treatments)
+type TreatmentController struct {
+	service *application.TreatmentService
+}
+
+func NewTreatmentController(service *application.TreatmentService) *TreatmentController {
+	return &TreatmentController{service: service}
+}
+
+func (ctrl *TreatmentController) FindTreatments(c *gin.Context) {
+	treatments, err := ctrl.service.GetAllTreatments()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, treatments)
 }
 
-func CreateTreatment(c *gin.Context) {
-	var treatment models.Treatment
+func (ctrl *TreatmentController) CreateTreatment(c *gin.Context) {
+
+	var treatment domain.Treatment
 	if err := c.ShouldBindJSON(&treatment); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := config.DB.Create(&treatment).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create treatment"})
+	if err := ctrl.service.CreateTreatment(treatment); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, treatment)
 }
 
-func FindTreatment(c *gin.Context) {
-	var treatment models.Treatment
-	if err := config.DB.First(&treatment, c.Param("id")).Error; err != nil {
+func (ctrl *TreatmentController) FindTreatment(c *gin.Context) {
+
+	treatmentID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	treatment, err := ctrl.service.GetTreatmentByID(uint(treatmentID))
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Treatment not found"})
 		return
 	}
 	c.JSON(http.StatusOK, treatment)
 }
 
-func UpdateTreatment(c *gin.Context) {
-	var treatment models.Treatment
-	if err := config.DB.First(&treatment, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Treatment not found"})
-		return
-	}
+func (ctrl *TreatmentController) UpdateTreatment(c *gin.Context) {
+
+	var treatment domain.Treatment
 	if err := c.ShouldBindJSON(&treatment); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := config.DB.Save(&treatment).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update treatment"})
+
+	if err := ctrl.service.UpdateTreatment(treatment); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, treatment)
 }
 
-func DeleteTreatment(c *gin.Context) {
-	var treatment models.Treatment
-	if err := config.DB.First(&treatment, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Treatment not found"})
-		return
-	}
-	if err := config.DB.Delete(&treatment).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete treatment"})
+func (ctrl *TreatmentController) DeleteTreatment(c *gin.Context) {
+
+	treatmentID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err := ctrl.service.DeleteTreatment(uint(treatmentID)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": "Treatment deleted"})

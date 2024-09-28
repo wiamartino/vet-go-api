@@ -1,7 +1,10 @@
 package routes
 
 import (
+	"go-vet/application"
 	"go-vet/controllers"
+	"go-vet/infrastructure/database"
+	"go-vet/infrastructure/repositories"
 	"go-vet/middlewares"
 
 	"github.com/gin-gonic/gin"
@@ -10,61 +13,90 @@ import (
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
-	r.POST("/register", controllers.Register)
-	r.POST("/login", controllers.Login)
+	db, err := database.ConnectDatabase()
+	if err != nil {
+		panic("Failed to connect to database!")
+	}
+
+	// User
+	userRepo := repositories.NewUserRepository(db)
+	userService := application.NewUserService(userRepo)
+	authController := controllers.NewAuthController(userService)
+
+	r.POST("/register", authController.Register)
+	r.POST("/login", authController.Login)
 
 	authorized := r.Group("/")
 	authorized.Use(middlewares.AuthMiddleware())
 	{
 
-		// Client routes
-		authorized.GET("/clients", controllers.FindClients)
-		authorized.POST("/clients", controllers.CreateClient)
-		authorized.GET("/clients/:id", controllers.FindClient)
-		authorized.PUT("/clients/:id", controllers.UpdateClient)
-		authorized.DELETE("/clients/:id", controllers.DeleteClient)
+		// Appointment
+		appointmentRepo := repositories.NewAppointmentRepository(db)
+		appointmentService := application.NewAppointmentService(appointmentRepo)
+		appointmentController := controllers.NewAppointmentController(appointmentService)
+		authorized.GET("/appointments", appointmentController.FindAppointments)
+		authorized.POST("/appointments", appointmentController.CreateAppointment)
+		authorized.PUT("/appointments/:id", appointmentController.UpdateAppointment)
+		authorized.DELETE("/appointments/:id", appointmentController.DeleteAppointment)
 
-		// Pet routes
-		authorized.GET("/pets", controllers.FindPets)
-		authorized.POST("/pets", controllers.CreatePet)
-		authorized.GET("/pets/:id", controllers.FindPet)
-		authorized.PUT("/pets/:id", controllers.UpdatePet)
-		authorized.DELETE("/pets/:id", controllers.DeletePet)
+		// Client
+		clientRepo := repositories.NewClientRepository(db)
+		clientService := application.NewClientService(clientRepo)
+		clientController := controllers.NewClientController(clientService)
+		authorized.GET("/clients", clientController.FindClients)
+		authorized.POST("/clients", clientController.CreateClient)
+		authorized.PUT("/clients/:id", clientController.UpdateClient)
+		authorized.DELETE("/clients/:id", clientController.DeleteClient)
 
-		// Veterinarian routes
-		authorized.GET("/veterinarians", controllers.FindVeterinarians)
-		authorized.POST("/veterinarians", controllers.CreateVeterinarian)
-		authorized.GET("/veterinarians/:id", controllers.FindVeterinarian)
-		authorized.PUT("/veterinarians/:id", controllers.UpdateVeterinarian)
-		authorized.DELETE("/veterinarians/:id", controllers.DeleteVeterinarian)
+		// Pet
+		petRepo := repositories.NewPetRepository(db)
+		petService := application.NewPetService(petRepo)
+		petController := controllers.NewPetController(petService)
+		authorized.GET("/pets", petController.FindPets)
+		authorized.POST("/pets", petController.CreatePet)
+		authorized.GET("/pets/:id", petController.FindPet)
+		authorized.PUT("/pets/:id", petController.UpdatePet)
+		authorized.DELETE("/pets/:id", petController.DeletePet)
 
-		// Appointment routes
-		authorized.GET("/appointments", controllers.FindAppointments)
-		authorized.POST("/appointments", controllers.CreateAppointment)
-		authorized.GET("/appointments/:id", controllers.FindAppointment)
-		authorized.PUT("/appointments/:id", controllers.UpdateAppointment)
-		authorized.DELETE("/appointments/:id", controllers.DeleteAppointment)
+		// Veterinarian
+		veterinarianRepo := repositories.NewVeterinarianRepository(db)
+		veterinarianService := application.NewVeterinarianService(veterinarianRepo)
+		veterinarianController := controllers.NewVeterinarianController(veterinarianService)
+		authorized.GET("/veterinarians", veterinarianController.FindVeterinarians)
+		authorized.POST("/veterinarians", veterinarianController.CreateVeterinarian)
+		authorized.GET("/veterinarians/:id", veterinarianController.FindVeterinarian)
+		authorized.PUT("/veterinarians/:id", veterinarianController.UpdateVeterinarian)
+		authorized.DELETE("/veterinarians/:id", veterinarianController.DeleteVeterinarian)
 
-		// Treatment routes
-		authorized.GET("/treatments", controllers.FindTreatments)
-		authorized.POST("/treatments", controllers.CreateTreatment)
-		authorized.GET("/treatments/:id", controllers.FindTreatment)
-		authorized.PUT("/treatments/:id", controllers.UpdateTreatment)
-		authorized.DELETE("/treatments/:id", controllers.DeleteTreatment)
+		// Treatment
+		treatmentRepo := repositories.NewTreatmentRepository(db)
+		treatmentService := application.NewTreatmentService(treatmentRepo)
+		treatmentController := controllers.NewTreatmentController(treatmentService)
+		authorized.GET("/treatments", treatmentController.FindTreatments)
+		authorized.POST("/treatments", treatmentController.CreateTreatment)
+		authorized.GET("/treatments/:id", treatmentController.FindTreatment)
+		authorized.PUT("/treatments/:id", treatmentController.UpdateTreatment)
+		authorized.DELETE("/treatments/:id", treatmentController.DeleteTreatment)
 
-		// Invoice routes
-		authorized.GET("/invoices", controllers.FindInvoices)
-		authorized.POST("/invoices", controllers.CreateInvoice)
-		authorized.GET("/invoices/:id", controllers.FindInvoice)
-		authorized.PUT("/invoices/:id", controllers.UpdateInvoice)
-		authorized.DELETE("/invoices/:id", controllers.DeleteInvoice)
+		// Invoice
+		invoiceRepo := repositories.NewInvoiceRepository(db)
+		invoiceService := application.NewInvoiceService(invoiceRepo)
+		invoiceController := controllers.NewInvoiceController(invoiceService)
+		authorized.GET("/invoices", invoiceController.FindInvoices)
+		authorized.POST("/invoices", invoiceController.CreateInvoice)
+		authorized.GET("/invoices/:id", invoiceController.FindInvoice)
+		authorized.PUT("/invoices/:id", invoiceController.UpdateInvoice)
+		authorized.DELETE("/invoices/:id", invoiceController.DeleteInvoice)
 
-		// Medication routes
-		authorized.POST("/medications", controllers.CreateMedication)
-		authorized.GET("/medications", controllers.FindMedications)
-		authorized.GET("/medications/:id", controllers.FindMedication)
-		authorized.PUT("/medications/:id", controllers.UpdateMedication)
-		authorized.DELETE("/medications/:id", controllers.DeleteMedication)
+		// Medication
+		medicationRepo := repositories.NewMedicationRepository(db)
+		medicationService := application.NewMedicationService(medicationRepo)
+		medicationController := controllers.NewMedicationController(medicationService)
+		authorized.POST("/medications", medicationController.CreateMedication)
+		authorized.GET("/medications", medicationController.FindMedications)
+		authorized.GET("/medications/:id", medicationController.FindMedication)
+		authorized.PUT("/medications/:id", medicationController.UpdateMedication)
+		authorized.DELETE("/medications/:id", medicationController.DeleteMedication)
 
 	}
 

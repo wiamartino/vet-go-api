@@ -1,27 +1,39 @@
 package controllers
 
 import (
-	"go-vet/config"
-	"go-vet/models"
+	"go-vet/application"
+	"go-vet/domain"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func FindAppointments(c *gin.Context) {
-	var appointments []models.Appointment
-	config.DB.Preload("Pet").Preload("Veterinarian").Find(&appointments)
+type AppointmentController struct {
+	service *application.AppointmentService
+}
+
+func NewAppointmentController(service *application.AppointmentService) *AppointmentController {
+	return &AppointmentController{service: service}
+}
+
+func (ctrl *AppointmentController) FindAppointments(c *gin.Context) {
+	appointments, err := ctrl.service.GetAllAppointments()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, appointments)
 }
 
-func CreateAppointment(c *gin.Context) {
-	var appointment models.Appointment
+func (ctrl *AppointmentController) CreateAppointment(c *gin.Context) {
+	var appointment domain.Appointment
 	if err := c.ShouldBindJSON(&appointment); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := config.DB.Create(&appointment).Error; err != nil {
+	if err := ctrl.service.CreateAppointment(appointment); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -29,27 +41,27 @@ func CreateAppointment(c *gin.Context) {
 	c.JSON(http.StatusOK, appointment)
 }
 
-func FindAppointment(c *gin.Context) {
-	var appointment models.Appointment
-	if err := config.DB.Preload("Pet").Preload("Veterinarian").First(&appointment, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Appointment not found"})
+func (ctrl *AppointmentController) FindAppointment(c *gin.Context) {
+
+	idParam, _ := strconv.Atoi(c.Param("id"))
+	id := uint(idParam)
+	appointment, err := ctrl.service.GetAppointmentByID(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, appointment)
 }
 
-func UpdateAppointment(c *gin.Context) {
-	var appointment models.Appointment
-	if err := config.DB.First(&appointment, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Appointment not found"})
-		return
-	}
+func (ctrl *AppointmentController) UpdateAppointment(c *gin.Context) {
+	var appointment domain.Appointment
+
 	if err := c.ShouldBindJSON(&appointment); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := config.DB.Save(&appointment).Error; err != nil {
+	if err := ctrl.service.UpdateAppointment(appointment); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -57,16 +69,15 @@ func UpdateAppointment(c *gin.Context) {
 	c.JSON(http.StatusOK, appointment)
 }
 
-func DeleteAppointment(c *gin.Context) {
-	var appointment models.Appointment
-	if err := config.DB.First(&appointment, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Appointment not found"})
-		return
-	}
-	if err := config.DB.Delete(&appointment).Error; err != nil {
+func (ctrl *AppointmentController) DeleteAppointment(c *gin.Context) {
+
+	idParam, _ := strconv.Atoi(c.Param("id"))
+	id := uint(idParam)
+	if err := ctrl.service.DeleteAppointment(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": "Appointment deleted"})
+
 }

@@ -1,12 +1,12 @@
 package main
 
 import (
-	"go-vet/config"
+	"go-vet/infrastructure/database"
 	"go-vet/routes"
 )
 
 func main() {
 	r := routes.SetupRouter()
-	config.ConnectDatabase()
+	database.ConnectDatabase()
 	r.Run(":8080")
 }

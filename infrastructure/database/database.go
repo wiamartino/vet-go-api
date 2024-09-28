@@ -1,8 +1,8 @@
-package config
+package database
 
 import (
 	"fmt"
-	"go-vet/models"
+	"go-vet/domain"
 	"log"
 	"os"
 
@@ -11,9 +11,11 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
+type DB struct {
+	*gorm.DB
+}
 
-func ConnectDatabase() {
+func ConnectDatabase() (*DB, error) {
 
 	godotenv.Load(".env")
 
@@ -33,11 +35,11 @@ func ConnectDatabase() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	database.AutoMigrate(&models.User{})
-	database.AutoMigrate(&models.Pet{})
-	database.AutoMigrate(&models.Client{})
-	database.AutoMigrate(&models.Appointment{})
-	database.AutoMigrate(&models.Veterinarian{}, &models.Treatment{}, &models.Invoice{})
-	database.AutoMigrate(&models.Medication{})
-	DB = database
+	database.AutoMigrate(&domain.User{})
+	database.AutoMigrate(&domain.Pet{})
+	database.AutoMigrate(&domain.Client{})
+	database.AutoMigrate(&domain.Appointment{})
+	database.AutoMigrate(&domain.Veterinarian{}, &domain.Treatment{}, &domain.Invoice{})
+	database.AutoMigrate(&domain.Medication{})
+	return &DB{database}, nil
 }
