@@ -15,7 +15,7 @@ func NewPetRepository(db *database.DB) *PetRepository {
 
 func (r *PetRepository) FindAll() ([]domain.Pet, error) {
 	var pets []domain.Pet
-	if err := r.db.Preload("Client").Find(&pets).Error; err != nil {
+	if err := r.db.Find(&pets).Error; err != nil {
 		return nil, err
 	}
 	return pets, nil
@@ -23,7 +23,7 @@ func (r *PetRepository) FindAll() ([]domain.Pet, error) {
 
 func (r *PetRepository) FindByID(id uint) (domain.Pet, error) {
 	var pet domain.Pet
-	if err := r.db.Preload("Client").First(&pet, id).Error; err != nil {
+	if err := r.db.First(&pet, id).Error; err != nil {
 		return domain.Pet{}, err
 	}
 	return pet, nil
