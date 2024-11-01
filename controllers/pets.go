@@ -42,7 +42,11 @@ func (ctrl *PetController) CreatePet(c *gin.Context) {
 
 func (ctrl *PetController) FindPet(c *gin.Context) {
 
-	petID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	petID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pet ID"})
+		return
+	}
 	pet, err := ctrl.service.GetPetByID(uint(petID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Pet not found"})
@@ -59,9 +63,13 @@ func (ctrl *PetController) UpdatePet(c *gin.Context) {
 		return
 	}
 
-	petID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	petID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pet ID"})
+		return
+	}
 	pet.PetID = uint(petID)
-	err := ctrl.service.UpdatePet(&pet)
+	err = ctrl.service.UpdatePet(&pet)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -72,8 +80,12 @@ func (ctrl *PetController) UpdatePet(c *gin.Context) {
 
 func (ctrl *PetController) DeletePet(c *gin.Context) {
 
-	petID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
-	err := ctrl.service.DeletePet(uint(petID))
+	petID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pet ID"})
+		return
+	}
+	err = ctrl.service.DeletePet(uint(petID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

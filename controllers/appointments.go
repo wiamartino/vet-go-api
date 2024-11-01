@@ -43,7 +43,11 @@ func (ctrl *AppointmentController) CreateAppointment(c *gin.Context) {
 
 func (ctrl *AppointmentController) FindAppointment(c *gin.Context) {
 
-	idParam, _ := strconv.Atoi(c.Param("id"))
+	idParam, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid appointment ID"})
+		return
+	}
 	id := uint(idParam)
 	appointment, err := ctrl.service.GetAppointmentByID(id)
 	if err != nil {
@@ -61,7 +65,11 @@ func (ctrl *AppointmentController) UpdateAppointment(c *gin.Context) {
 		return
 	}
 
-	appointmentID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	appointmentID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid appointment ID"})
+		return
+	}
 	appointment.AppointmentID = uint(appointmentID)
 
 	if err := ctrl.service.UpdateAppointment(&appointment); err != nil {
@@ -74,7 +82,11 @@ func (ctrl *AppointmentController) UpdateAppointment(c *gin.Context) {
 
 func (ctrl *AppointmentController) DeleteAppointment(c *gin.Context) {
 
-	idParam, _ := strconv.Atoi(c.Param("id"))
+	idParam, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid appointment ID"})
+		return
+	}
 	id := uint(idParam)
 	if err := ctrl.service.DeleteAppointment(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

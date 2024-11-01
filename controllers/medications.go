@@ -45,7 +45,11 @@ func (ctrl *MedicationController) CreateMedication(c *gin.Context) {
 
 func (ctrl *MedicationController) FindMedication(c *gin.Context) {
 
-	medicationID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	medicationID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid medication ID"})
+		return
+	}
 
 	medication, err := ctrl.service.GetMedicationByID(uint(medicationID))
 	if err != nil {
@@ -66,7 +70,11 @@ func (ctrl *MedicationController) UpdateMedication(c *gin.Context) {
 		return
 	}
 
-	medicationID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	medicationID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid medication ID"})
+		return
+	}
 	medication.ID = uint(medicationID)
 	if err := ctrl.service.UpdateMedication(&medication); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

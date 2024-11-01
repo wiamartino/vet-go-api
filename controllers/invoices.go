@@ -45,7 +45,11 @@ func (ctrl *InvoiceController) CreateInvoice(c *gin.Context) {
 
 func (ctrl *InvoiceController) FindInvoice(c *gin.Context) {
 
-	invoiceID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	invoiceID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid invoice ID"})
+		return
+	}
 
 	invoice, err := ctrl.service.GetInvoiceByID(uint(invoiceID))
 	if err != nil {
@@ -65,7 +69,11 @@ func (ctrl *InvoiceController) UpdateInvoice(c *gin.Context) {
 		return
 	}
 
-	invoiceID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	invoiceID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid invoice ID"})
+		return
+	}
 	invoice.InvoiceID = uint(invoiceID)
 	if err := ctrl.service.UpdateInvoice(&invoice); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

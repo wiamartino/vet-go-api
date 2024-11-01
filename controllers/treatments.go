@@ -27,7 +27,6 @@ func (ctrl *TreatmentController) FindTreatments(c *gin.Context) {
 }
 
 func (ctrl *TreatmentController) CreateTreatment(c *gin.Context) {
-
 	var treatment domain.Treatment
 	if err := c.ShouldBindJSON(&treatment); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -37,44 +36,54 @@ func (ctrl *TreatmentController) CreateTreatment(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.JSON(http.StatusOK, treatment)
 }
 
 func (ctrl *TreatmentController) FindTreatment(c *gin.Context) {
-
-	treatmentID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	treatmentIDStr := c.Param("id")
+	treatmentID, err := strconv.ParseUint(treatmentIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de tratamiento inválido"})
+		return
+	}
 	treatment, err := ctrl.service.GetTreatmentByID(uint(treatmentID))
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Treatment not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tratamiento no encontrado"})
 		return
 	}
 	c.JSON(http.StatusOK, treatment)
 }
 
 func (ctrl *TreatmentController) UpdateTreatment(c *gin.Context) {
-
+	treatmentIDStr := c.Param("id")
+	treatmentID, err := strconv.ParseUint(treatmentIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de tratamiento inválido"})
+		return
+	}
 	var treatment domain.Treatment
 	if err := c.ShouldBindJSON(&treatment); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	treatmentID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
 	treatment.TreatmentID = uint(treatmentID)
 	if err := ctrl.service.UpdateTreatment(&treatment); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.JSON(http.StatusOK, treatment)
 }
 
 func (ctrl *TreatmentController) DeleteTreatment(c *gin.Context) {
-
-	treatmentID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	treatmentIDStr := c.Param("id")
+	treatmentID, err := strconv.ParseUint(treatmentIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de tratamiento inválido"})
+		return
+	}
 	if err := ctrl.service.DeleteTreatment(uint(treatmentID)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": "Treatment deleted"})
+	c.JSON(http.StatusOK, gin.H{"data": "Tratamiento eliminado"})
 }

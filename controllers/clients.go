@@ -67,7 +67,11 @@ func (ctrl *ClientController) UpdateClient(c *gin.Context) {
 		return
 	}
 
-	clientID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	clientID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client ID"})
+		return
+	}
 	client.ClientID = uint(clientID)
 
 	if err := ctrl.service.UpdateClient(&client); err != nil {

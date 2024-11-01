@@ -40,7 +40,11 @@ func (ctrl *VeterinarianController) CreateVeterinarian(c *gin.Context) {
 }
 
 func (ctrl *VeterinarianController) FindVeterinarian(c *gin.Context) {
-	idParam, _ := strconv.Atoi(c.Param("id"))
+	idParam, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
 	id := uint(idParam)
 	veterinarian, err := ctrl.service.GetVeterinarianByID(id)
 	if err != nil {
@@ -59,10 +63,14 @@ func (ctrl *VeterinarianController) UpdateVeterinarian(c *gin.Context) {
 		return
 	}
 
-	veterinarianID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	veterinarianID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
 	veterinarian.VeterinarianID = uint(veterinarianID)
 	if err := ctrl.service.UpdateVeterinarian(&veterinarian); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update veterinarian"})
 		return
 	}
 
@@ -71,7 +79,11 @@ func (ctrl *VeterinarianController) UpdateVeterinarian(c *gin.Context) {
 
 func (ctrl *VeterinarianController) DeleteVeterinarian(c *gin.Context) {
 
-	idParam, _ := strconv.Atoi(c.Param("id"))
+	idParam, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
 	id := uint(idParam)
 	if _, err := ctrl.service.GetVeterinarianByID(id); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Veterinarian not found"})
