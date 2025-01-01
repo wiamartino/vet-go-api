@@ -26,6 +26,8 @@ func SetupRouter() *gin.Engine {
 	r.POST("/register", authController.Register)
 	r.POST("/login", authController.Login)
 
+	r.Use(middlewares.MetricsMiddleware())
+
 	authorized := r.Group("/")
 	authorized.Use(middlewares.AuthMiddleware())
 	{
