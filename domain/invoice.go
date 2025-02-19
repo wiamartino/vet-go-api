@@ -10,8 +10,8 @@ type Invoice struct {
 	Total         float64     `json:"total"`
 	ClientID      uint        `json:"client_id"`
 	AppointmentID uint        `json:"appointment_id"`
-	Client        Client      `gorm:"foreignKey:ClientID"`
-	Appointment   Appointment `gorm:"foreignKey:AppointmentID"`
+	Client        Client      //`gorm:"foreignKey:ClientID"`
+	Appointment   Appointment //`gorm:"foreignKey:AppointmentID"`
 }
 
 type InvoiceRepository interface {

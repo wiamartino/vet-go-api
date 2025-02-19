@@ -1,0 +1,747 @@
+{
+  "info": {
+    "name": "Vet-Go API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Appointment",
+      "item": [
+        {
+          "name": "Get Appointments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/appointments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["appointments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Appointment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/appointments/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["appointments", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Appointment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2023-10-10T10:00:00Z\",\n  \"time\": \"2023-10-10T10:00:00Z\",\n  \"pet_id\": 1,\n  \"veterinarian_id\": 1,\n  \"reason_for_appointment\": \"Checkup\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/appointments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["appointments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Appointment",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2023-10-10T10:00:00Z\",\n  \"time\": \"2023-10-10T10:00:00Z\",\n  \"pet_id\": 1,\n  \"veterinarian_id\": 1,\n  \"reason_for_appointment\": \"Checkup\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/appointments/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["appointments", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Appointment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/appointments/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["appointments", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Client",
+      "item": [
+        {
+          "name": "Get Clients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/clients",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["clients"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Client",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/clients/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["clients", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Client",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"123-456-7890\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/clients",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["clients"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Client",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"123-456-7890\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/clients/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["clients", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Client",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/clients/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["clients", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pet",
+      "item": [
+        {
+          "name": "Get Pets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/pets",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["pets"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pet",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/pets/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["pets", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Pet",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Buddy\",\n  \"species\": \"Dog\",\n  \"breed\": \"Golden Retriever\",\n  \"age\": 3,\n  \"client_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/pets",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["pets"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Pet",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Buddy\",\n  \"species\": \"Dog\",\n  \"breed\": \"Golden Retriever\",\n  \"age\": 3,\n  \"client_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/pets/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["pets", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Pet",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/pets/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["pets", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Veterinarian",
+      "item": [
+        {
+          "name": "Get Veterinarians",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/veterinarians",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["veterinarians"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Veterinarian",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/veterinarians/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["veterinarians", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Veterinarian",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dr. Smith\",\n  \"specialty\": \"Surgery\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/veterinarians",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["veterinarians"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Veterinarian",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dr. Smith\",\n  \"specialty\": \"Surgery\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/veterinarians/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["veterinarians", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Veterinarian",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/veterinarians/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["veterinarians", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Treatment",
+      "item": [
+        {
+          "name": "Get Treatments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/treatments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["treatments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Treatment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/treatments/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["treatments", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Treatment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Vaccination\",\n  \"cost\": 50.0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/treatments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["treatments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Treatment",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Vaccination\",\n  \"cost\": 50.0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/treatments/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["treatments", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Treatment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/treatments/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["treatments", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Invoice",
+      "item": [
+        {
+          "name": "Get Invoices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/invoices",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["invoices"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Invoice",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/invoices/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["invoices", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Invoice",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100.0,\n  \"date\": \"2023-10-10T10:00:00Z\",\n  \"client_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/invoices",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["invoices"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Invoice",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100.0,\n  \"date\": \"2023-10-10T10:00:00Z\",\n  \"client_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/invoices/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["invoices", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Invoice",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/invoices/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["invoices", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Medication",
+      "item": [
+        {
+          "name": "Get Medications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/medications",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["medications"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Medication",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/medications/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["medications", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Medication",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Antibiotic\",\n  \"dosage\": \"2 pills per day\",\n  \"pet_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/medications",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["medications"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Medication",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Antibiotic\",\n  \"dosage\": \"2 pills per day\",\n  \"pet_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/medications/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["medications", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Medication",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/medications/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["medications", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -50,7 +50,19 @@ func ConnectDatabase() (*DB, error) {
 			log.Fatal("Failed to connect to database:", err)
 		}
 
-		database.AutoMigrate(&domain.User{}, &domain.Pet{}, &domain.Client{}, &domain.Appointment{}, &domain.Veterinarian{}, &domain.Treatment{}, &domain.Invoice{}, &domain.Medication{}, &AuditLog{})
+		database.AutoMigrate(&AuditLog{})
+		database.AutoMigrate(&domain.User{})
+		database.AutoMigrate(&domain.Pet{})
+		database.AutoMigrate(&domain.Client{})
+		database.AutoMigrate(&domain.Appointment{})
+		database.AutoMigrate(&domain.Veterinarian{})
+		database.AutoMigrate(&domain.Treatment{})
+		database.AutoMigrate(&domain.Invoice{})
+		database.AutoMigrate(&domain.Medication{})
+
+		//database.SetupJoinTable(&domain.Appointment{}, "Pet", &domain.Pet{})
+		//database.SetupJoinTable(&domain.Appointment{}, "Veterinarian", &domain.Veterinarian{})
+
 		dbInstance = &DB{database}
 	})
 

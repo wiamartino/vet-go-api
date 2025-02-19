@@ -11,8 +11,8 @@ type Appointment struct {
 	PetID                uint         `json:"pet_id"`
 	VeterinarianID       uint         `json:"veterinarian_id"`
 	ReasonForAppointment string       `json:"reason_for_appointment"`
-	Pet                  Pet          `gorm:"foreignKey:PetID"`
-	Veterinarian         Veterinarian `gorm:"foreignKey:VeterinarianID"`
+	Pet                  Pet          //`gorm:"foreignKey:PetID"`
+	Veterinarian         Veterinarian //`gorm:"foreignKey:VeterinarianID"`
 }
 
 type AppointmentRepository interface {

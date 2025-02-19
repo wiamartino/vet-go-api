@@ -15,7 +15,7 @@ func NewAppointmentRepository(db *database.DB) *AppointmentRepository {
 
 func (r *AppointmentRepository) FindAll() ([]domain.Appointment, error) {
 	var appointments []domain.Appointment
-	if err := r.db.Find(&appointments).Error; err != nil {
+	if err := r.db.Preload("Veterinarian").Preload("Pet").Find(&appointments).Error; err != nil {
 		return nil, err
 	}
 	return appointments, nil
@@ -23,7 +23,7 @@ func (r *AppointmentRepository) FindAll() ([]domain.Appointment, error) {
 
 func (r *AppointmentRepository) FindByID(id uint) (domain.Appointment, error) {
 	var appointment domain.Appointment
-	if err := r.db.First(&appointment, id).Error; err != nil {
+	if err := r.db.Preload("Veterinarian").Preload("Pet").First(&appointment, id).Error; err != nil {
 		return domain.Appointment{}, err
 	}
 	return appointment, nil
