@@ -22,6 +22,7 @@ func SetupRouter() *gin.Engine {
 	setupUserRoutes(r, db)
 
 	r.Use(middlewares.MetricsMiddleware())
+	r.Use(middlewares.AuditMiddleware(db))
 
 	authorized := r.Group("/")
 	authorized.Use(middlewares.AuthMiddleware())

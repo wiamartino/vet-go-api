@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -14,6 +15,15 @@ import (
 
 type DB struct {
 	*gorm.DB
+}
+
+type AuditLog struct {
+	ID        uint      `gorm:"primaryKey"`
+	Method    string    `json:"method"`
+	Path      string    `json:"path"`
+	Timestamp time.Time `json:"timestamp"`
+	Status    int       `json:"status"`
+	User      string    `json:"user"`
 }
 
 var (
@@ -40,7 +50,7 @@ func ConnectDatabase() (*DB, error) {
 			log.Fatal("Failed to connect to database:", err)
 		}
 
-		database.AutoMigrate(&domain.User{}, &domain.Pet{}, &domain.Client{}, &domain.Appointment{}, &domain.Veterinarian{}, &domain.Treatment{}, &domain.Invoice{}, &domain.Medication{})
+		database.AutoMigrate(&domain.User{}, &domain.Pet{}, &domain.Client{}, &domain.Appointment{}, &domain.Veterinarian{}, &domain.Treatment{}, &domain.Invoice{}, &domain.Medication{}, &AuditLog{})
 		dbInstance = &DB{database}
 	})
 
