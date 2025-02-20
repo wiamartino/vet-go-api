@@ -68,3 +68,44 @@ func ConnectDatabase() (*DB, error) {
 
 	return dbInstance, nil
 }
+
+func DropAllTablesAndSeed() error {
+	if err := dbInstance.Migrator().DropTable(
+		&AuditLog{},
+		&domain.User{},
+		&domain.Pet{},
+		&domain.Client{},
+		&domain.Appointment{},
+		&domain.Veterinarian{},
+		&domain.Treatment{},
+		&domain.Invoice{},
+		&domain.Medication{},
+	); err != nil {
+		return err
+	}
+
+	if err := dbInstance.AutoMigrate(
+		&AuditLog{},
+		&domain.User{},
+		&domain.Pet{},
+		&domain.Client{},
+		&domain.Appointment{},
+		&domain.Veterinarian{},
+		&domain.Treatment{},
+		&domain.Invoice{},
+		&domain.Medication{},
+	); err != nil {
+		return err
+	}
+
+	seedFile, err := os.ReadFile("database/seed.sql")
+	if err != nil {
+		return err
+	}
+
+	if err := dbInstance.Exec(string(seedFile)).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
