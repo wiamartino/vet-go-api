@@ -2,18 +2,27 @@ package middlewares
 
 import (
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/joho/godotenv"
 )
-
-var jwtKey = []byte("your_secret_key")
 
 type Claims struct {
 	Email string `json:"email"`
 	jwt.StandardClaims
 }
+
+func init() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic("Error loading .env file")
+	}
+}
+
+var jwtKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -33,11 +42,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		claims := &Claims{}
 
-		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-			return jwtKey, nil
-		})
-
-		if err != nil || !token.Valid {
+		if err := parseToken(tokenString, claims); err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
@@ -46,4 +51,16 @@ func AuthMiddleware() gin.HandlerFunc {
 		c.Set("email", claims.Email)
 		c.Next()
 	}
+}
+
+func parseToken(tokenString string, claims *Claims) error {
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+
+	if err != nil || !token.Valid {
+		return err
+	}
+
+	return nil
 }
