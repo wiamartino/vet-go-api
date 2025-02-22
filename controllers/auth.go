@@ -49,6 +49,12 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 		return
 	}
 
+	// validate if the email is already registered
+	if _, err := ctrl.service.FindByEmail(user.Email); err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email is already registered"})
+		return
+	}
+
 	if err := ctrl.service.Register(user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

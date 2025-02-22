@@ -14,6 +14,10 @@ func NewUserService(repo domain.UserRepository) *UserService {
 	return &UserService{repo: repo}
 }
 
+func (s *UserService) FindByEmail(email string) (domain.User, error) {
+	return s.repo.FindByEmail(email)
+}
+
 func (s *UserService) Register(user domain.User) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
