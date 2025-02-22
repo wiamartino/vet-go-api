@@ -7,6 +7,7 @@ import (
 	"go-vet/infrastructure/repositories"
 	"go-vet/middlewares"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,6 +18,9 @@ func SetupRouter() *gin.Engine {
 	if err != nil {
 		panic("Failed to connect to database!")
 	}
+
+	// CORS
+	r.Use(cors.Default())
 
 	// User
 	setupUserRoutes(r, db)
