@@ -4,13 +4,20 @@ import (
 	"go-vet/application"
 	"go-vet/domain"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/joho/godotenv"
 )
 
-var jwtKey = []byte("your_secret_key")
+func init() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic("Error loading .env file")
+	}
+}
 
 type Claims struct {
 	Email string `json:"email"`
@@ -18,6 +25,9 @@ type Claims struct {
 }
 
 func GenerateToken(email string) (string, error) {
+
+	var jwtKey = []byte(os.Getenv("JWT_SECRET_KEY"))
+
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &Claims{
 		Email: email,
