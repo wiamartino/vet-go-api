@@ -20,7 +20,12 @@ func SetupRouter() *gin.Engine {
 	}
 
 	// CORS
-	r.Use(cors.Default())
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"*"}
+	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
+	config.AllowCredentials = true
+
+	r.Use(cors.New(config))
 
 	// User
 	setupUserRoutes(r, db)
