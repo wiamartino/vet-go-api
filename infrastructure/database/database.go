@@ -31,80 +31,86 @@ var (
 	once       sync.Once
 )
 
+// Models returns all database models that need to be migrated
+func models() []interface{} {
+	return []interface{}{
+		&AuditLog{},
+		&domain.User{},
+		&domain.Pet{},
+		&domain.Client{},
+		&domain.Appointment{},
+		&domain.Veterinarian{},
+		&domain.Treatment{},
+		&domain.Invoice{},
+		&domain.Medication{},
+	}
+}
+
+// getDSN builds the database connection string from environment variables
+func getDSN() string {
+	if err := godotenv.Load(".env"); err != nil {
+		log.Printf("Warning: Error loading .env file: %v", err)
+	}
+
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_SSLMODE"),
+		os.Getenv("DB_TIMEZONE"),
+	)
+}
+
+// ConnectDatabase initializes the database connection
 func ConnectDatabase() (*DB, error) {
+	var err error
 	once.Do(func() {
-		godotenv.Load(".env")
-
-		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
-			os.Getenv("DB_HOST"),
-			os.Getenv("DB_USER"),
-			os.Getenv("DB_PASSWORD"),
-			os.Getenv("DB_NAME"),
-			os.Getenv("DB_PORT"),
-			os.Getenv("DB_SSLMODE"),
-			os.Getenv("DB_TIMEZONE"),
-		)
-
-		database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-		if err != nil {
-			log.Fatal("Failed to connect to database:", err)
+		database, dbErr := gorm.Open(postgres.Open(getDSN()), &gorm.Config{})
+		if dbErr != nil {
+			err = fmt.Errorf("failed to connect to database: %w", dbErr)
+			return
 		}
 
-		database.AutoMigrate(&AuditLog{})
-		database.AutoMigrate(&domain.User{})
-		database.AutoMigrate(&domain.Pet{})
-		database.AutoMigrate(&domain.Client{})
-		database.AutoMigrate(&domain.Appointment{})
-		database.AutoMigrate(&domain.Veterinarian{})
-		database.AutoMigrate(&domain.Treatment{})
-		database.AutoMigrate(&domain.Invoice{})
-		database.AutoMigrate(&domain.Medication{})
-
-		//database.SetupJoinTable(&domain.Appointment{}, "Pet", &domain.Pet{})
-		//database.SetupJoinTable(&domain.Appointment{}, "Veterinarian", &domain.Veterinarian{})
+		if migErr := database.AutoMigrate(models()...); migErr != nil {
+			err = fmt.Errorf("failed to migrate database: %w", migErr)
+			return
+		}
 
 		dbInstance = &DB{database}
 	})
 
+	if err != nil {
+		return nil, err
+	}
 	return dbInstance, nil
 }
 
+// DropAllTablesAndSeed drops all tables and reseeds the database
 func DropAllTablesAndSeed() error {
-	if err := dbInstance.Migrator().DropTable(
-		&AuditLog{},
-		&domain.User{},
-		&domain.Pet{},
-		&domain.Client{},
-		&domain.Appointment{},
-		&domain.Veterinarian{},
-		&domain.Treatment{},
-		&domain.Invoice{},
-		&domain.Medication{},
-	); err != nil {
-		return err
+	if dbInstance == nil {
+		return fmt.Errorf("database instance not initialized")
 	}
 
-	if err := dbInstance.AutoMigrate(
-		&AuditLog{},
-		&domain.User{},
-		&domain.Pet{},
-		&domain.Client{},
-		&domain.Appointment{},
-		&domain.Veterinarian{},
-		&domain.Treatment{},
-		&domain.Invoice{},
-		&domain.Medication{},
-	); err != nil {
-		return err
+	// Drop all tables
+	if err := dbInstance.Migrator().DropTable(models()...); err != nil {
+		return fmt.Errorf("failed to drop tables: %w", err)
 	}
 
+	// Recreate tables
+	if err := dbInstance.AutoMigrate(models()...); err != nil {
+		return fmt.Errorf("failed to recreate tables: %w", err)
+	}
+
+	// Seed database
 	seedFile, err := os.ReadFile("database/seed.sql")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read seed file: %w", err)
 	}
 
 	if err := dbInstance.Exec(string(seedFile)).Error; err != nil {
-		return err
+		return fmt.Errorf("failed to execute seed file: %w", err)
 	}
 
 	return nil
