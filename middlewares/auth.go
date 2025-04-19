@@ -2,65 +2,91 @@ package middlewares
 
 import (
 	"net/http"
-	"os"
 	"strings"
 
+	jwtUtils "go-vet/utils/jwt"
+
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
-	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 )
 
-type Claims struct {
-	Email string `json:"email"`
-	jwt.StandardClaims
-}
-
-func init() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		panic("Error loading .env file")
-	}
-}
-
-var jwtKey = []byte(os.Getenv("JWT_SECRET_KEY"))
-
+// AuthMiddleware validates JWT tokens and sets user information in the context
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status": "error",
+				"error":  "Authorization header required",
+			})
 			c.Abort()
 			return
 		}
 
 		if !strings.HasPrefix(authHeader, "Bearer ") {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format"})
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status": "error",
+				"error":  "Invalid token format",
+			})
 			c.Abort()
 			return
 		}
 
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		claims := &Claims{}
-
-		if err := parseToken(tokenString, claims); err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		tokenString := authHeader[7:] // Remove "Bearer " prefix
+		claims, err := jwtUtils.ValidateToken(tokenString)
+		if err != nil {
+			logrus.WithError(err).Info("Invalid token")
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status": "error",
+				"error":  "Invalid or expired token",
+			})
 			c.Abort()
 			return
 		}
 
+		// Store user information in context
+		c.Set("userID", claims.UserID)
 		c.Set("email", claims.Email)
+		c.Set("role", claims.Role)
+
 		c.Next()
 	}
 }
 
-func parseToken(tokenString string, claims *Claims) error {
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return jwtKey, nil
-	})
+// RoleAuthMiddleware checks if the user has the required role
+func RoleAuthMiddleware(requiredRoles ...string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// This middleware should be used after AuthMiddleware
+		role, exists := c.Get("role")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status": "error",
+				"error":  "Authentication required",
+			})
+			c.Abort()
+			return
+		}
 
-	if err != nil || !token.Valid {
-		return err
+		userRole := role.(string)
+
+		// Check if the user's role is in the list of required roles
+		hasPermission := false
+		for _, requiredRole := range requiredRoles {
+			if userRole == requiredRole {
+				hasPermission = true
+				break
+			}
+		}
+
+		if !hasPermission {
+			c.JSON(http.StatusForbidden, gin.H{
+				"status": "error",
+				"error":  "Insufficient permissions",
+			})
+			c.Abort()
+			return
+		}
+
+		c.Next()
 	}
-
-	return nil
 }

@@ -24,17 +24,19 @@ func SetupRouter() *gin.Engine {
 	config.AllowOrigins = []string{"*"}
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
 	config.AllowCredentials = true
+	config.ExposeHeaders = []string{"Content-Length"}
+	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}
 
 	r.Use(cors.New(config))
-
-	// User
-	setupUserRoutes(r, db)
-
 	r.Use(middlewares.MetricsMiddleware())
-	r.Use(middlewares.AuditMiddleware(db))
 
-	authorized := r.Group("/")
+	// Public auth routes
+	setupAuthRoutes(r, db)
+
+	// Authentication & audit required for these routes
+	authorized := r.Group("/api/v1")
 	authorized.Use(middlewares.AuthMiddleware())
+	authorized.Use(middlewares.AuditMiddleware(db))
 	{
 		setupAppointmentRoutes(authorized, db)
 		setupClientRoutes(authorized, db)
@@ -48,13 +50,17 @@ func SetupRouter() *gin.Engine {
 	return r
 }
 
-func setupUserRoutes(r *gin.Engine, db *database.DB) {
+func setupAuthRoutes(r *gin.Engine, db *database.DB) {
 	userRepo := repositories.NewUserRepository(db)
 	userService := application.NewUserService(userRepo)
 	authController := controllers.NewAuthController(userService)
 
-	r.POST("/register", authController.Register)
-	r.POST("/login", authController.Login)
+	auth := r.Group("/auth")
+	{
+		auth.POST("/register", authController.Register)
+		auth.POST("/login", authController.Login)
+		auth.POST("/refresh", authController.RefreshToken)
+	}
 }
 
 func setupAppointmentRoutes(r *gin.RouterGroup, db *database.DB) {
@@ -62,11 +68,14 @@ func setupAppointmentRoutes(r *gin.RouterGroup, db *database.DB) {
 	appointmentService := application.NewAppointmentService(appointmentRepo)
 	appointmentController := controllers.NewAppointmentController(appointmentService)
 
-	r.GET("/appointments", appointmentController.FindAppointments)
-	r.GET("/appointments/:id", appointmentController.FindAppointment)
-	r.POST("/appointments", appointmentController.CreateAppointment)
-	r.PUT("/appointments/:id", appointmentController.UpdateAppointment)
-	r.DELETE("/appointments/:id", appointmentController.DeleteAppointment)
+	appointments := r.Group("/appointments")
+	{
+		appointments.GET("", appointmentController.FindAppointments)
+		appointments.GET("/:id", appointmentController.FindAppointment)
+		appointments.POST("", appointmentController.CreateAppointment)
+		appointments.PUT("/:id", appointmentController.UpdateAppointment)
+		appointments.DELETE("/:id", appointmentController.DeleteAppointment)
+	}
 }
 
 func setupClientRoutes(r *gin.RouterGroup, db *database.DB) {
@@ -74,11 +83,14 @@ func setupClientRoutes(r *gin.RouterGroup, db *database.DB) {
 	clientService := application.NewClientService(clientRepo)
 	clientController := controllers.NewClientController(clientService)
 
-	r.GET("/clients", clientController.FindClients)
-	r.GET("/clients/:id", clientController.FindClient)
-	r.POST("/clients", clientController.CreateClient)
-	r.PUT("/clients/:id", clientController.UpdateClient)
-	r.DELETE("/clients/:id", clientController.DeleteClient)
+	clients := r.Group("/clients")
+	{
+		clients.GET("", clientController.FindClients)
+		clients.GET("/:id", clientController.FindClient)
+		clients.POST("", clientController.CreateClient)
+		clients.PUT("/:id", clientController.UpdateClient)
+		clients.DELETE("/:id", clientController.DeleteClient)
+	}
 }
 
 func setupPetRoutes(r *gin.RouterGroup, db *database.DB) {
@@ -86,11 +98,14 @@ func setupPetRoutes(r *gin.RouterGroup, db *database.DB) {
 	petService := application.NewPetService(petRepo)
 	petController := controllers.NewPetController(petService)
 
-	r.GET("/pets", petController.FindPets)
-	r.GET("/pets/:id", petController.FindPet)
-	r.POST("/pets", petController.CreatePet)
-	r.PUT("/pets/:id", petController.UpdatePet)
-	r.DELETE("/pets/:id", petController.DeletePet)
+	pets := r.Group("/pets")
+	{
+		pets.GET("", petController.FindPets)
+		pets.GET("/:id", petController.FindPet)
+		pets.POST("", petController.CreatePet)
+		pets.PUT("/:id", petController.UpdatePet)
+		pets.DELETE("/:id", petController.DeletePet)
+	}
 }
 
 func setupVeterinarianRoutes(r *gin.RouterGroup, db *database.DB) {
@@ -98,11 +113,14 @@ func setupVeterinarianRoutes(r *gin.RouterGroup, db *database.DB) {
 	veterinarianService := application.NewVeterinarianService(veterinarianRepo)
 	veterinarianController := controllers.NewVeterinarianController(veterinarianService)
 
-	r.GET("/veterinarians", veterinarianController.FindVeterinarians)
-	r.GET("/veterinarians/:id", veterinarianController.FindVeterinarian)
-	r.POST("/veterinarians", veterinarianController.CreateVeterinarian)
-	r.PUT("/veterinarians/:id", veterinarianController.UpdateVeterinarian)
-	r.DELETE("/veterinarians/:id", veterinarianController.DeleteVeterinarian)
+	veterinarians := r.Group("/veterinarians")
+	{
+		veterinarians.GET("", veterinarianController.FindVeterinarians)
+		veterinarians.GET("/:id", veterinarianController.FindVeterinarian)
+		veterinarians.POST("", veterinarianController.CreateVeterinarian)
+		veterinarians.PUT("/:id", veterinarianController.UpdateVeterinarian)
+		veterinarians.DELETE("/:id", veterinarianController.DeleteVeterinarian)
+	}
 }
 
 func setupTreatmentRoutes(r *gin.RouterGroup, db *database.DB) {
@@ -110,11 +128,14 @@ func setupTreatmentRoutes(r *gin.RouterGroup, db *database.DB) {
 	treatmentService := application.NewTreatmentService(treatmentRepo)
 	treatmentController := controllers.NewTreatmentController(treatmentService)
 
-	r.GET("/treatments", treatmentController.FindTreatments)
-	r.GET("/treatments/:id", treatmentController.FindTreatment)
-	r.POST("/treatments", treatmentController.CreateTreatment)
-	r.PUT("/treatments/:id", treatmentController.UpdateTreatment)
-	r.DELETE("/treatments/:id", treatmentController.DeleteTreatment)
+	treatments := r.Group("/treatments")
+	{
+		treatments.GET("", treatmentController.FindTreatments)
+		treatments.GET("/:id", treatmentController.FindTreatment)
+		treatments.POST("", treatmentController.CreateTreatment)
+		treatments.PUT("/:id", treatmentController.UpdateTreatment)
+		treatments.DELETE("/:id", treatmentController.DeleteTreatment)
+	}
 }
 
 func setupInvoiceRoutes(r *gin.RouterGroup, db *database.DB) {
@@ -122,11 +143,14 @@ func setupInvoiceRoutes(r *gin.RouterGroup, db *database.DB) {
 	invoiceService := application.NewInvoiceService(invoiceRepo)
 	invoiceController := controllers.NewInvoiceController(invoiceService)
 
-	r.GET("/invoices", invoiceController.FindInvoices)
-	r.GET("/invoices/:id", invoiceController.FindInvoice)
-	r.POST("/invoices", invoiceController.CreateInvoice)
-	r.PUT("/invoices/:id", invoiceController.UpdateInvoice)
-	r.DELETE("/invoices/:id", invoiceController.DeleteInvoice)
+	invoices := r.Group("/invoices")
+	{
+		invoices.GET("", invoiceController.FindInvoices)
+		invoices.GET("/:id", invoiceController.FindInvoice)
+		invoices.POST("", invoiceController.CreateInvoice)
+		invoices.PUT("/:id", invoiceController.UpdateInvoice)
+		invoices.DELETE("/:id", invoiceController.DeleteInvoice)
+	}
 }
 
 func setupMedicationRoutes(r *gin.RouterGroup, db *database.DB) {
@@ -134,9 +158,12 @@ func setupMedicationRoutes(r *gin.RouterGroup, db *database.DB) {
 	medicationService := application.NewMedicationService(medicationRepo)
 	medicationController := controllers.NewMedicationController(medicationService)
 
-	r.GET("/medications", medicationController.FindMedications)
-	r.GET("/medications/:id", medicationController.FindMedication)
-	r.POST("/medications", medicationController.CreateMedication)
-	r.PUT("/medications/:id", medicationController.UpdateMedication)
-	r.DELETE("/medications/:id", medicationController.DeleteMedication)
+	medications := r.Group("/medications")
+	{
+		medications.GET("", medicationController.FindMedications)
+		medications.GET("/:id", medicationController.FindMedication)
+		medications.POST("", medicationController.CreateMedication)
+		medications.PUT("/:id", medicationController.UpdateMedication)
+		medications.DELETE("/:id", medicationController.DeleteMedication)
+	}
 }
