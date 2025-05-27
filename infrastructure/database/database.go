@@ -31,6 +31,11 @@ var (
 	once       sync.Once
 )
 
+// GetDB returns the current database instance
+func GetDB() *DB {
+	return dbInstance
+}
+
 // Models returns all database models that need to be migrated
 func models() []interface{} {
 	return []interface{}{
@@ -89,8 +94,12 @@ func ConnectDatabase() (*DB, error) {
 
 // DropAllTablesAndSeed drops all tables and reseeds the database
 func DropAllTablesAndSeed() error {
+	// Ensure database connection is initialized
 	if dbInstance == nil {
-		return fmt.Errorf("database instance not initialized")
+		_, err := ConnectDatabase()
+		if err != nil {
+			return fmt.Errorf("failed to initialize database connection: %w", err)
+		}
 	}
 
 	// Drop all tables
