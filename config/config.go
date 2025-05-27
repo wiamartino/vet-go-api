@@ -24,15 +24,15 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	Host     string
-	User     string
-	Password string
-	Name     string
-	Port     string
-	SSLMode  string
-	TimeZone string
-	MaxOpenConns int
-	MaxIdleConns int
+	Host            string
+	User            string
+	Password        string
+	Name            string
+	Port            string
+	SSLMode         string
+	TimeZone        string
+	MaxOpenConns    int
+	MaxIdleConns    int
 	ConnMaxLifetime time.Duration
 }
 
@@ -48,7 +48,7 @@ type LoggingConfig struct {
 }
 
 type SecurityConfig struct {
-	PasswordMinLength   int
+	PasswordMinLength  int
 	BCryptCost         int
 	RateLimitPerMinute int
 	CORSOrigins        []string
@@ -69,15 +69,15 @@ func LoadConfig() error {
 			Host:        getEnv("SERVER_HOST", "localhost"),
 		},
 		Database: DatabaseConfig{
-			Host:     getEnv("DB_HOST", "localhost"),
-			User:     getEnv("DB_USER", "postgres"),
-			Password: getEnv("DB_PASSWORD", ""),
-			Name:     getEnv("DB_NAME", "vet_go"),
-			Port:     getEnv("DB_PORT", "5432"),
-			SSLMode:  getEnv("DB_SSLMODE", "disable"),
-			TimeZone: getEnv("DB_TIMEZONE", "UTC"),
-			MaxOpenConns: getEnvAsInt("DB_MAX_OPEN_CONNS", 25),
-			MaxIdleConns: getEnvAsInt("DB_MAX_IDLE_CONNS", 5),
+			Host:            getEnv("DB_HOST", "localhost"),
+			User:            getEnv("DB_USER", "postgres"),
+			Password:        getEnv("DB_PASSWORD", ""),
+			Name:            getEnv("DB_NAME", "vet_go"),
+			Port:            getEnv("DB_PORT", "5432"),
+			SSLMode:         getEnv("DB_SSLMODE", "disable"),
+			TimeZone:        getEnv("DB_TIMEZONE", "UTC"),
+			MaxOpenConns:    getEnvAsInt("DB_MAX_OPEN_CONNS", 25),
+			MaxIdleConns:    getEnvAsInt("DB_MAX_IDLE_CONNS", 5),
 			ConnMaxLifetime: time.Duration(getEnvAsInt("DB_CONN_MAX_LIFETIME_MINUTES", 30)) * time.Minute,
 		},
 		JWT: JWTConfig{
@@ -90,7 +90,7 @@ func LoadConfig() error {
 			Format: getEnv("LOG_FORMAT", "text"),
 		},
 		Security: SecurityConfig{
-			PasswordMinLength:   getEnvAsInt("PASSWORD_MIN_LENGTH", 8),
+			PasswordMinLength:  getEnvAsInt("PASSWORD_MIN_LENGTH", 8),
 			BCryptCost:         getEnvAsInt("BCRYPT_COST", 12),
 			RateLimitPerMinute: getEnvAsInt("RATE_LIMIT_PER_MINUTE", 60),
 			CORSOrigins:        []string{getEnv("CORS_ORIGINS", "*")},
