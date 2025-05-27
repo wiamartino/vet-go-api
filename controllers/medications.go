@@ -3,6 +3,7 @@ package controllers
 import (
 	"go-vet/application"
 	"go-vet/domain"
+	"go-vet/utils"
 	"net/http"
 	"strconv"
 
@@ -20,44 +21,44 @@ func NewMedicationController(service *application.MedicationService) *Medication
 func (ctrl *MedicationController) FindMedications(c *gin.Context) {
 	medications, err := ctrl.service.GetAllMedications()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, medications)
+	utils.RespondWithData(c, http.StatusOK, medications)
 }
 
 func (ctrl *MedicationController) CreateMedication(c *gin.Context) {
 
 	var medication domain.Medication
 	if err := c.ShouldBindJSON(&medication); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	err := ctrl.service.CreateMedication(&medication)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, medication)
+	utils.RespondWithData(c, http.StatusOK, medication)
 }
 
 func (ctrl *MedicationController) FindMedication(c *gin.Context) {
 
 	medicationID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid medication ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid medication ID")
 		return
 	}
 
 	medication, err := ctrl.service.GetMedicationByID(uint(medicationID))
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Medication not found"})
+		utils.RespondWithError(c, http.StatusNotFound, "Medication not found")
 		return
 	}
 
-	c.JSON(http.StatusOK, medication)
+	utils.RespondWithData(c, http.StatusOK, medication)
 
 }
 
@@ -66,22 +67,22 @@ func (ctrl *MedicationController) UpdateMedication(c *gin.Context) {
 	var medication domain.Medication
 
 	if err := c.ShouldBindJSON(&medication); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	medicationID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid medication ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid medication ID")
 		return
 	}
 	medication.ID = uint(medicationID)
 	if err := ctrl.service.UpdateMedication(&medication); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, medication)
+	utils.RespondWithData(c, http.StatusOK, medication)
 
 }
 
@@ -89,14 +90,14 @@ func (ctrl *MedicationController) DeleteMedication(c *gin.Context) {
 
 	medicationID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid medication ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid medication ID")
 		return
 	}
 
 	if err = ctrl.service.DeleteMedication(uint(medicationID)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": "Medication deleted"})
+	utils.RespondWithSuccess(c, http.StatusOK, "Medication deleted successfully")
 }

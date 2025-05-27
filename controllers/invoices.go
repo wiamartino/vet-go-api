@@ -3,6 +3,7 @@ package controllers
 import (
 	"go-vet/application"
 	"go-vet/domain"
+	"go-vet/utils"
 	"net/http"
 	"strconv"
 
@@ -20,44 +21,44 @@ func NewInvoiceController(service *application.InvoiceService) *InvoiceControlle
 func (ctrl *InvoiceController) FindInvoices(c *gin.Context) {
 	invoices, err := ctrl.service.GetAllInvoices()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, invoices)
+	utils.RespondWithData(c, http.StatusOK, invoices)
 }
 
 func (ctrl *InvoiceController) CreateInvoice(c *gin.Context) {
 	var invoice domain.Invoice
 	if err := c.ShouldBindJSON(&invoice); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	err := ctrl.service.CreateInvoice(&invoice)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, invoice)
+	utils.RespondWithData(c, http.StatusOK, invoice)
 }
 
 func (ctrl *InvoiceController) FindInvoice(c *gin.Context) {
 
 	invoiceID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid invoice ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid invoice ID")
 		return
 	}
 
 	invoice, err := ctrl.service.GetInvoiceByID(uint(invoiceID))
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Invoice not found"})
+		utils.RespondWithError(c, http.StatusNotFound, "Invoice not found")
 		return
 	}
 
-	c.JSON(http.StatusOK, invoice)
+	utils.RespondWithData(c, http.StatusOK, invoice)
 }
 
 func (ctrl *InvoiceController) UpdateInvoice(c *gin.Context) {
@@ -65,37 +66,37 @@ func (ctrl *InvoiceController) UpdateInvoice(c *gin.Context) {
 	var invoice domain.Invoice
 
 	if err := c.ShouldBindJSON(&invoice); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	invoiceID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid invoice ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid invoice ID")
 		return
 	}
 	invoice.InvoiceID = uint(invoiceID)
 	if err := ctrl.service.UpdateInvoice(&invoice); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, invoice)
+	utils.RespondWithData(c, http.StatusOK, invoice)
 }
 
 func (ctrl *InvoiceController) DeleteInvoice(c *gin.Context) {
 
 	invoiceID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid invoice ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid invoice ID")
 		return
 	}
 
 	if err = ctrl.service.DeleteInvoice(uint(invoiceID)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": "Invoice deleted"})
+	utils.RespondWithSuccess(c, http.StatusOK, "Invoice deleted successfully")
 
 }

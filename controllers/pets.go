@@ -3,6 +3,7 @@ package controllers
 import (
 	"go-vet/application"
 	"go-vet/domain"
+	"go-vet/utils"
 	"net/http"
 	"strconv"
 
@@ -20,76 +21,76 @@ func NewPetController(service *application.PetService) *PetController {
 func (ctrl *PetController) FindPets(c *gin.Context) {
 	pets, err := ctrl.service.GetAllPets()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, pets)
+	utils.RespondWithData(c, http.StatusOK, pets)
 }
 
 func (ctrl *PetController) CreatePet(c *gin.Context) {
 
 	var pet domain.Pet
 	if err := c.ShouldBindJSON(&pet); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := ctrl.service.CreatePet(&pet); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, pet)
+	utils.RespondWithData(c, http.StatusOK, pet)
 }
 
 func (ctrl *PetController) FindPet(c *gin.Context) {
 
 	petID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pet ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid pet ID")
 		return
 	}
 	pet, err := ctrl.service.GetPetByID(uint(petID))
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Pet not found"})
+		utils.RespondWithError(c, http.StatusNotFound, "Pet not found")
 		return
 	}
-	c.JSON(http.StatusOK, pet)
+	utils.RespondWithData(c, http.StatusOK, pet)
 }
 
 func (ctrl *PetController) UpdatePet(c *gin.Context) {
 
 	var pet domain.Pet
 	if err := c.ShouldBindJSON(&pet); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	petID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pet ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid pet ID")
 		return
 	}
 	pet.PetID = uint(petID)
 	err = ctrl.service.UpdatePet(&pet)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, pet)
+	utils.RespondWithData(c, http.StatusOK, pet)
 }
 
 func (ctrl *PetController) DeletePet(c *gin.Context) {
 
 	petID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pet ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid pet ID")
 		return
 	}
 	err = ctrl.service.DeletePet(uint(petID))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": "Pet deleted"})
+	utils.RespondWithSuccess(c, http.StatusOK, "Pet deleted successfully")
 }
