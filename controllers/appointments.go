@@ -24,7 +24,7 @@ func (ctrl *AppointmentController) FindAppointments(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.RespondWithData(c, http.StatusOK, appointments)
+	utils.RespondWithSuccess(c, http.StatusOK, appointments)
 }
 
 func (ctrl *AppointmentController) CreateAppointment(c *gin.Context) {
@@ -39,7 +39,7 @@ func (ctrl *AppointmentController) CreateAppointment(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithData(c, http.StatusOK, appointment)
+	utils.RespondWithSuccess(c, http.StatusOK, appointment)
 }
 
 func (ctrl *AppointmentController) FindAppointment(c *gin.Context) {
@@ -52,10 +52,10 @@ func (ctrl *AppointmentController) FindAppointment(c *gin.Context) {
 	id := uint(idParam)
 	appointment, err := ctrl.service.GetAppointmentByID(id)
 	if err != nil {
-		utils.RespondWithError(c, http.StatusNotFound, "Appointment not found")
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.RespondWithData(c, http.StatusOK, appointment)
+	utils.RespondWithSuccess(c, http.StatusOK, appointment)
 }
 
 func (ctrl *AppointmentController) UpdateAppointment(c *gin.Context) {
@@ -78,7 +78,7 @@ func (ctrl *AppointmentController) UpdateAppointment(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithData(c, http.StatusOK, appointment)
+	utils.RespondWithSuccess(c, http.StatusOK, appointment)
 }
 
 func (ctrl *AppointmentController) DeleteAppointment(c *gin.Context) {
@@ -94,6 +94,6 @@ func (ctrl *AppointmentController) DeleteAppointment(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithSuccess(c, http.StatusOK, "Appointment deleted successfully")
+	utils.RespondWithSuccess(c, http.StatusOK, "Appointment deleted")
 
 }

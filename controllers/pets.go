@@ -24,7 +24,7 @@ func (ctrl *PetController) FindPets(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.RespondWithData(c, http.StatusOK, pets)
+	utils.RespondWithSuccess(c, http.StatusOK, pets)
 }
 
 func (ctrl *PetController) CreatePet(c *gin.Context) {
@@ -38,7 +38,7 @@ func (ctrl *PetController) CreatePet(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.RespondWithData(c, http.StatusOK, pet)
+	utils.RespondWithSuccess(c, http.StatusOK, pet)
 }
 
 func (ctrl *PetController) FindPet(c *gin.Context) {
@@ -53,7 +53,7 @@ func (ctrl *PetController) FindPet(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusNotFound, "Pet not found")
 		return
 	}
-	utils.RespondWithData(c, http.StatusOK, pet)
+	utils.RespondWithSuccess(c, http.StatusOK, pet)
 }
 
 func (ctrl *PetController) UpdatePet(c *gin.Context) {
@@ -76,7 +76,7 @@ func (ctrl *PetController) UpdatePet(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithData(c, http.StatusOK, pet)
+	utils.RespondWithSuccess(c, http.StatusOK, pet)
 }
 
 func (ctrl *PetController) DeletePet(c *gin.Context) {
@@ -92,5 +92,5 @@ func (ctrl *PetController) DeletePet(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithSuccess(c, http.StatusOK, "Pet deleted successfully")
+	utils.RespondWithSuccess(c, http.StatusOK, "Pet deleted")
 }

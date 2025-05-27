@@ -24,7 +24,7 @@ func (ctrl *ClientController) FindClients(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.RespondWithData(c, http.StatusOK, clients)
+	utils.RespondWithSuccess(c, http.StatusOK, clients)
 }
 
 func (ctrl *ClientController) CreateClient(c *gin.Context) {
@@ -39,7 +39,7 @@ func (ctrl *ClientController) CreateClient(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithData(c, http.StatusOK, client)
+	utils.RespondWithSuccess(c, http.StatusOK, client)
 }
 
 func (ctrl *ClientController) FindClient(c *gin.Context) {
@@ -56,7 +56,7 @@ func (ctrl *ClientController) FindClient(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithData(c, http.StatusOK, client)
+	utils.RespondWithSuccess(c, http.StatusOK, client)
 }
 
 func (ctrl *ClientController) UpdateClient(c *gin.Context) {
@@ -80,7 +80,7 @@ func (ctrl *ClientController) UpdateClient(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithData(c, http.StatusOK, client)
+	utils.RespondWithSuccess(c, http.StatusOK, client)
 
 }
 
@@ -97,5 +97,5 @@ func (ctrl *ClientController) DeleteClient(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithSuccess(c, http.StatusOK, "Client deleted successfully")
+	utils.RespondWithSuccess(c, http.StatusOK, "Client deleted")
 }

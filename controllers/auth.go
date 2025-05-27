@@ -3,6 +3,7 @@ package controllers
 import (
 	"go-vet/application"
 	"go-vet/domain"
+	"go-vet/utils"
 	jwtUtils "go-vet/utils/jwt"
 	"net/http"
 
@@ -22,33 +23,23 @@ func NewAuthController(service *application.UserService) *AuthController {
 func (ctrl *AuthController) Register(c *gin.Context) {
 	var user domain.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "error",
-			"error":  "Invalid input data",
-		})
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid input data")
 		return
 	}
 
 	// Validate if the email is already registered
 	if _, err := ctrl.service.FindByEmail(user.Email); err == nil {
-		c.JSON(http.StatusConflict, gin.H{
-			"status": "error",
-			"error":  "Email is already registered",
-		})
+		utils.RespondWithError(c, http.StatusConflict, "Email is already registered")
 		return
 	}
 
 	if err := ctrl.service.Register(user); err != nil {
 		logrus.WithError(err).Error("Failed to register user")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "error",
-			"error":  err.Error(),
-		})
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"status":  "success",
+	utils.RespondWithSuccess(c, http.StatusCreated, gin.H{
 		"message": "User registered successfully",
 	})
 }
@@ -61,19 +52,13 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&credentials); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "error",
-			"error":  "Invalid credentials format",
-		})
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid credentials format")
 		return
 	}
 
 	user, err := ctrl.service.Login(credentials.Email, credentials.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"status": "error",
-			"error":  "Invalid email or password",
-		})
+		utils.RespondWithError(c, http.StatusUnauthorized, "Invalid email or password")
 		return
 	}
 
@@ -81,23 +66,17 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 	token, err := jwtUtils.GenerateToken(user.ID, user.Email, user.Role)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to generate token")
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "error",
-			"error":  "Authentication failed",
-		})
+		utils.RespondWithError(c, http.StatusInternalServerError, "Authentication failed")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "success",
-		"data": gin.H{
-			"token":      token,
-			"user_id":    user.ID,
-			"email":      user.Email,
-			"name":       user.Name,
-			"role":       user.Role,
-			"created_at": user.CreatedAt,
-		},
+	utils.RespondWithSuccess(c, http.StatusOK, gin.H{
+		"token":      token,
+		"user_id":    user.ID,
+		"email":      user.Email,
+		"name":       user.Name,
+		"role":       user.Role,
+		"created_at": user.CreatedAt,
 	})
 }
 
@@ -105,27 +84,18 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 func (ctrl *AuthController) RefreshToken(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" || len(authHeader) < 8 || authHeader[:7] != "Bearer " {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"status": "error",
-			"error":  "Valid authorization token required",
-		})
+		utils.RespondWithError(c, http.StatusUnauthorized, "Valid authorization token required")
 		return
 	}
 
 	tokenString := authHeader[7:]
 	newToken, err := jwtUtils.RefreshToken(tokenString)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"status": "error",
-			"error":  "Invalid token: " + err.Error(),
-		})
+		utils.RespondWithError(c, http.StatusUnauthorized, "Invalid token: "+err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "success",
-		"data": gin.H{
-			"token": newToken,
-		},
+	utils.RespondWithSuccess(c, http.StatusOK, gin.H{
+		"token": newToken,
 	})
 }

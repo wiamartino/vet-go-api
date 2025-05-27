@@ -24,7 +24,7 @@ func (ctrl *VeterinarianController) FindVeterinarians(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusInternalServerError, "Failed to fetch veterinarians")
 		return
 	}
-	utils.RespondWithData(c, http.StatusOK, veterinarians)
+	utils.RespondWithSuccess(c, http.StatusOK, veterinarians)
 }
 
 func (ctrl *VeterinarianController) CreateVeterinarian(c *gin.Context) {
@@ -37,7 +37,7 @@ func (ctrl *VeterinarianController) CreateVeterinarian(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusInternalServerError, "Failed to create veterinarian")
 		return
 	}
-	utils.RespondWithData(c, http.StatusOK, veterinarian)
+	utils.RespondWithSuccess(c, http.StatusOK, veterinarian)
 }
 
 func (ctrl *VeterinarianController) FindVeterinarian(c *gin.Context) {
@@ -52,7 +52,7 @@ func (ctrl *VeterinarianController) FindVeterinarian(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.RespondWithData(c, http.StatusOK, veterinarian)
+	utils.RespondWithSuccess(c, http.StatusOK, veterinarian)
 }
 
 func (ctrl *VeterinarianController) UpdateVeterinarian(c *gin.Context) {
@@ -75,7 +75,7 @@ func (ctrl *VeterinarianController) UpdateVeterinarian(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithData(c, http.StatusOK, veterinarian)
+	utils.RespondWithSuccess(c, http.StatusOK, veterinarian)
 }
 
 func (ctrl *VeterinarianController) DeleteVeterinarian(c *gin.Context) {
@@ -96,5 +96,5 @@ func (ctrl *VeterinarianController) DeleteVeterinarian(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithSuccess(c, http.StatusOK, "Veterinarian deleted successfully")
+	utils.RespondWithSuccess(c, http.StatusOK, "Veterinarian deleted")
 }
