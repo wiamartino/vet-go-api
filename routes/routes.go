@@ -14,6 +14,11 @@ import (
 func SetupRouter(db *database.DB) *gin.Engine {
 	r := gin.Default()
 
+	// Use the provided database connection instead of creating a new one
+	if db == nil {
+		panic("Database connection is required!")
+	}
+
 	// CORS
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{"*"}
