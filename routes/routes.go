@@ -11,13 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter() *gin.Engine {
+func SetupRouter(db *database.DB) *gin.Engine {
 	r := gin.Default()
-
-	db, err := database.ConnectDatabase()
-	if err != nil {
-		panic("Failed to connect to database!")
-	}
 
 	// CORS
 	config := cors.DefaultConfig()

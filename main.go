@@ -4,30 +4,29 @@ import (
 	"go-vet/infrastructure/database"
 	"go-vet/routes"
 	"go-vet/utils"
-	"log"
+	"os"
 )
 
 func main() {
-	// Initialize logging first
+	// Setup logging first
 	utils.SetupLogging()
 
-	// Initialize database connection
-	_, err := database.ConnectDatabase()
+	// Establish database connection once
+	db, err := database.ConnectDatabase()
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		panic("Failed to connect to database: " + err.Error())
 	}
 
-	// Drop tables and seed (only for development)
-	if err := database.DropAllTablesAndSeed(); err != nil {
-		log.Fatalf("Failed to drop tables and seed database: %v", err)
+	// Drop and seed database (only for development environment)
+	env := os.Getenv("GO_ENV")
+	if env == "" || env == "development" {
+		if err := database.DropAllTablesAndSeed(); err != nil {
+			panic("Failed to drop tables and seed database: " + err.Error())
+		}
 	}
 
-	// Setup router (this will reuse the existing database connection)
-	r := routes.SetupRouter()
+	// Setup router with the existing database connection
+	r := routes.SetupRouter(db)
 
-	// Start server
-	log.Println("Starting server on :8080")
-	if err := r.Run(":8080"); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
+	r.Run(":8080")
 }
