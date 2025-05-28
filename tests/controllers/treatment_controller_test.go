@@ -8,6 +8,7 @@ import (
 	"go-vet/controllers"
 	"go-vet/domain"
 	"go-vet/tests/mocks"
+	"go-vet/tests/testhelpers"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -23,7 +24,7 @@ func TestTreatmentController(t *testing.T) {
 		treatmentService := application.NewTreatmentService(mockRepo)
 		treatmentController := controllers.NewTreatmentController(treatmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/treatments", treatmentController.FindTreatments)
 
 		expectedTreatments := []domain.Treatment{
@@ -55,7 +56,7 @@ func TestTreatmentController(t *testing.T) {
 		treatmentService := application.NewTreatmentService(mockRepo)
 		treatmentController := controllers.NewTreatmentController(treatmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/treatments", treatmentController.FindTreatments)
 
 		mockRepo.On("FindAll").Return([]domain.Treatment{}, errors.New("database error"))
@@ -82,7 +83,7 @@ func TestTreatmentController(t *testing.T) {
 		treatmentService := application.NewTreatmentService(mockRepo)
 		treatmentController := controllers.NewTreatmentController(treatmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.POST("/treatments", treatmentController.CreateTreatment)
 
 		treatment := domain.Treatment{
@@ -120,7 +121,7 @@ func TestTreatmentController(t *testing.T) {
 		treatmentService := application.NewTreatmentService(mockRepo)
 		treatmentController := controllers.NewTreatmentController(treatmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.POST("/treatments", treatmentController.CreateTreatment)
 
 		invalidJSON := `{"name": "Test Treatment", "cost": }`
@@ -146,7 +147,7 @@ func TestTreatmentController(t *testing.T) {
 		treatmentService := application.NewTreatmentService(mockRepo)
 		treatmentController := controllers.NewTreatmentController(treatmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/treatments/:id", treatmentController.FindTreatment)
 
 		expectedTreatment := domain.Treatment{
@@ -182,7 +183,7 @@ func TestTreatmentController(t *testing.T) {
 		treatmentService := application.NewTreatmentService(mockRepo)
 		treatmentController := controllers.NewTreatmentController(treatmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/treatments/:id", treatmentController.FindTreatment)
 
 		// Act
@@ -205,7 +206,7 @@ func TestTreatmentController(t *testing.T) {
 		treatmentService := application.NewTreatmentService(mockRepo)
 		treatmentController := controllers.NewTreatmentController(treatmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/treatments/:id", treatmentController.FindTreatment)
 
 		mockRepo.On("FindByID", uint(999)).Return(domain.Treatment{}, errors.New("treatment not found"))
@@ -232,7 +233,7 @@ func TestTreatmentController(t *testing.T) {
 		treatmentService := application.NewTreatmentService(mockRepo)
 		treatmentController := controllers.NewTreatmentController(treatmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.PUT("/treatments/:id", treatmentController.UpdateTreatment)
 
 		treatment := domain.Treatment{
@@ -271,7 +272,7 @@ func TestTreatmentController(t *testing.T) {
 		treatmentService := application.NewTreatmentService(mockRepo)
 		treatmentController := controllers.NewTreatmentController(treatmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.DELETE("/treatments/:id", treatmentController.DeleteTreatment)
 
 		mockRepo.On("Delete", uint(1)).Return(nil)
@@ -299,7 +300,7 @@ func TestTreatmentController(t *testing.T) {
 		treatmentService := application.NewTreatmentService(mockRepo)
 		treatmentController := controllers.NewTreatmentController(treatmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.DELETE("/treatments/:id", treatmentController.DeleteTreatment)
 
 		// Act

@@ -24,7 +24,7 @@ func (ctrl *MedicationController) FindMedications(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.RespondWithData(c, http.StatusOK, medications)
+	utils.RespondWithSuccess(c, http.StatusOK, medications)
 }
 
 func (ctrl *MedicationController) CreateMedication(c *gin.Context) {
@@ -41,7 +41,7 @@ func (ctrl *MedicationController) CreateMedication(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithData(c, http.StatusOK, medication)
+	utils.RespondWithSuccess(c, http.StatusOK, medication)
 }
 
 func (ctrl *MedicationController) FindMedication(c *gin.Context) {
@@ -58,7 +58,7 @@ func (ctrl *MedicationController) FindMedication(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithData(c, http.StatusOK, medication)
+	utils.RespondWithSuccess(c, http.StatusOK, medication)
 
 }
 
@@ -82,7 +82,7 @@ func (ctrl *MedicationController) UpdateMedication(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithData(c, http.StatusOK, medication)
+	utils.RespondWithSuccess(c, http.StatusOK, medication)
 
 }
 

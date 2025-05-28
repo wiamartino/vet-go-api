@@ -8,6 +8,7 @@ import (
 	"go-vet/controllers"
 	"go-vet/domain"
 	"go-vet/tests/mocks"
+	"go-vet/tests/testhelpers"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -22,7 +23,7 @@ func TestVeterinarianController(t *testing.T) {
 		veterinarianService := application.NewVeterinarianService(mockRepo)
 		veterinarianController := controllers.NewVeterinarianController(veterinarianService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/veterinarians", veterinarianController.FindVeterinarians)
 
 		expectedVeterinarians := []domain.Veterinarian{
@@ -57,7 +58,7 @@ func TestVeterinarianController(t *testing.T) {
 		veterinarianService := application.NewVeterinarianService(mockRepo)
 		veterinarianController := controllers.NewVeterinarianController(veterinarianService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/veterinarians", veterinarianController.FindVeterinarians)
 
 		mockRepo.On("FindAll").Return([]domain.Veterinarian{}, errors.New("database error"))
@@ -84,7 +85,7 @@ func TestVeterinarianController(t *testing.T) {
 		veterinarianService := application.NewVeterinarianService(mockRepo)
 		veterinarianController := controllers.NewVeterinarianController(veterinarianService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.POST("/veterinarians", veterinarianController.CreateVeterinarian)
 
 		veterinarian := domain.Veterinarian{
@@ -122,7 +123,7 @@ func TestVeterinarianController(t *testing.T) {
 		veterinarianService := application.NewVeterinarianService(mockRepo)
 		veterinarianController := controllers.NewVeterinarianController(veterinarianService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.POST("/veterinarians", veterinarianController.CreateVeterinarian)
 
 		invalidJSON := `{"name": "Dr. Test", "specialty": }`
@@ -148,7 +149,7 @@ func TestVeterinarianController(t *testing.T) {
 		veterinarianService := application.NewVeterinarianService(mockRepo)
 		veterinarianController := controllers.NewVeterinarianController(veterinarianService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/veterinarians/:id", veterinarianController.FindVeterinarian)
 
 		expectedVeterinarian := domain.Veterinarian{
@@ -184,7 +185,7 @@ func TestVeterinarianController(t *testing.T) {
 		veterinarianService := application.NewVeterinarianService(mockRepo)
 		veterinarianController := controllers.NewVeterinarianController(veterinarianService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/veterinarians/:id", veterinarianController.FindVeterinarian)
 
 		// Act
@@ -207,7 +208,7 @@ func TestVeterinarianController(t *testing.T) {
 		veterinarianService := application.NewVeterinarianService(mockRepo)
 		veterinarianController := controllers.NewVeterinarianController(veterinarianService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/veterinarians/:id", veterinarianController.FindVeterinarian)
 
 		mockRepo.On("FindByID", uint(999)).Return(domain.Veterinarian{}, errors.New("veterinarian not found"))
@@ -234,7 +235,7 @@ func TestVeterinarianController(t *testing.T) {
 		veterinarianService := application.NewVeterinarianService(mockRepo)
 		veterinarianController := controllers.NewVeterinarianController(veterinarianService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.PUT("/veterinarians/:id", veterinarianController.UpdateVeterinarian)
 
 		veterinarian := domain.Veterinarian{
@@ -273,7 +274,7 @@ func TestVeterinarianController(t *testing.T) {
 		veterinarianService := application.NewVeterinarianService(mockRepo)
 		veterinarianController := controllers.NewVeterinarianController(veterinarianService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.DELETE("/veterinarians/:id", veterinarianController.DeleteVeterinarian)
 
 		// Mock the GetVeterinarianByID call that happens before deletion
@@ -303,7 +304,7 @@ func TestVeterinarianController(t *testing.T) {
 		veterinarianService := application.NewVeterinarianService(mockRepo)
 		veterinarianController := controllers.NewVeterinarianController(veterinarianService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.DELETE("/veterinarians/:id", veterinarianController.DeleteVeterinarian)
 
 		// Act

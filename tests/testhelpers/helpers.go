@@ -2,13 +2,23 @@ package testhelpers
 
 import (
 	"go-vet/domain"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-// SetupTestRouter creates a new Gin router for testing
+// SetupTestEnvironment sets up the test environment with required environment variables
+func SetupTestEnvironment() {
+	// Set required JWT environment variables for testing
+	os.Setenv("JWT_SECRET_KEY", "test-secret-key-for-testing-only")
+	os.Setenv("JWT_ISSUER", "vet-go-test")
+	os.Setenv("JWT_TIMEOUT_HOURS", "24")
+}
+
+// SetupTestRouter creates a new Gin router for testing with proper environment setup
 func SetupTestRouter() *gin.Engine {
+	SetupTestEnvironment()
 	gin.SetMode(gin.TestMode)
 	return gin.New()
 }

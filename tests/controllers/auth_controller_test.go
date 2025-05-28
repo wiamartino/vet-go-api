@@ -8,19 +8,14 @@ import (
 	"go-vet/controllers"
 	"go-vet/domain"
 	"go-vet/tests/mocks"
+	"go-vet/tests/testhelpers"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
-
-func setupTestRouter() *gin.Engine {
-	gin.SetMode(gin.TestMode)
-	return gin.New()
-}
 
 func TestAuthController(t *testing.T) {
 	t.Run("Register - should register user successfully", func(t *testing.T) {
@@ -29,7 +24,7 @@ func TestAuthController(t *testing.T) {
 		userService := application.NewUserService(mockRepo)
 		authController := controllers.NewAuthController(userService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.POST("/auth/register", authController.Register)
 
 		user := domain.User{
@@ -68,7 +63,7 @@ func TestAuthController(t *testing.T) {
 		userService := application.NewUserService(mockRepo)
 		authController := controllers.NewAuthController(userService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.POST("/auth/register", authController.Register)
 
 		user := domain.User{
@@ -107,7 +102,7 @@ func TestAuthController(t *testing.T) {
 		userService := application.NewUserService(mockRepo)
 		authController := controllers.NewAuthController(userService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.POST("/auth/register", authController.Register)
 
 		invalidJSON := `{"email": "test@example.com", "password": }`

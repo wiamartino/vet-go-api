@@ -5,11 +5,19 @@ import (
 	"go-vet/utils/jwt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	// Set required environment variables before any JWT package imports
+	os.Setenv("JWT_SECRET_KEY", "test-secret-key-for-testing-only")
+	os.Setenv("JWT_ISSUER", "vet-go-api")
+	os.Setenv("JWT_TIMEOUT_HOURS", "24")
+}
 
 func TestAuthMiddleware(t *testing.T) {
 	// Set Gin to test mode

@@ -8,6 +8,7 @@ import (
 	"go-vet/controllers"
 	"go-vet/domain"
 	"go-vet/tests/mocks"
+	"go-vet/tests/testhelpers"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -22,7 +23,7 @@ func TestClientController(t *testing.T) {
 		clientService := application.NewClientService(mockRepo)
 		clientController := controllers.NewClientController(clientService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/clients", clientController.FindClients)
 
 		expectedClients := []domain.Client{
@@ -57,7 +58,7 @@ func TestClientController(t *testing.T) {
 		clientService := application.NewClientService(mockRepo)
 		clientController := controllers.NewClientController(clientService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/clients", clientController.FindClients)
 
 		mockRepo.On("FindAll").Return([]domain.Client{}, errors.New("database error"))
@@ -85,7 +86,7 @@ func TestClientController(t *testing.T) {
 		clientService := application.NewClientService(mockRepo)
 		clientController := controllers.NewClientController(clientService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.POST("/clients", clientController.CreateClient)
 
 		client := domain.Client{
@@ -122,7 +123,7 @@ func TestClientController(t *testing.T) {
 		clientService := application.NewClientService(mockRepo)
 		clientController := controllers.NewClientController(clientService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.POST("/clients", clientController.CreateClient)
 
 		invalidJSON := `{"first_name": "John", "last_name": }`
@@ -150,7 +151,7 @@ func TestPetController(t *testing.T) {
 		petService := application.NewPetService(mockRepo)
 		petController := controllers.NewPetController(petService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/pets", petController.FindPets)
 
 		expectedPets := []domain.Pet{
@@ -185,7 +186,7 @@ func TestPetController(t *testing.T) {
 		petService := application.NewPetService(mockRepo)
 		petController := controllers.NewPetController(petService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/pets/:id", petController.FindPet)
 
 		expectedPet := domain.Pet{
@@ -220,7 +221,7 @@ func TestPetController(t *testing.T) {
 		petService := application.NewPetService(mockRepo)
 		petController := controllers.NewPetController(petService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/pets/:id", petController.FindPet)
 
 		// Act
@@ -244,7 +245,7 @@ func TestPetController(t *testing.T) {
 		petService := application.NewPetService(mockRepo)
 		petController := controllers.NewPetController(petService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/pets/:id", petController.FindPet)
 
 		mockRepo.On("FindByID", uint(999)).Return(domain.Pet{}, errors.New("pet not found"))
@@ -272,7 +273,7 @@ func TestPetController(t *testing.T) {
 		petService := application.NewPetService(mockRepo)
 		petController := controllers.NewPetController(petService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.DELETE("/pets/:id", petController.DeletePet)
 
 		mockRepo.On("Delete", uint(1)).Return(nil)

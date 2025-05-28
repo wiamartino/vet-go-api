@@ -8,6 +8,7 @@ import (
 	"go-vet/controllers"
 	"go-vet/domain"
 	"go-vet/tests/mocks"
+	"go-vet/tests/testhelpers"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -24,7 +25,7 @@ func TestAppointmentController(t *testing.T) {
 		appointmentService := application.NewAppointmentService(mockRepo)
 		appointmentController := controllers.NewAppointmentController(appointmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/appointments", appointmentController.FindAppointments)
 
 		expectedAppointments := []domain.Appointment{
@@ -59,7 +60,7 @@ func TestAppointmentController(t *testing.T) {
 		appointmentService := application.NewAppointmentService(mockRepo)
 		appointmentController := controllers.NewAppointmentController(appointmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/appointments", appointmentController.FindAppointments)
 
 		mockRepo.On("FindAll").Return([]domain.Appointment{}, errors.New("database error"))
@@ -86,7 +87,7 @@ func TestAppointmentController(t *testing.T) {
 		appointmentService := application.NewAppointmentService(mockRepo)
 		appointmentController := controllers.NewAppointmentController(appointmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.POST("/appointments", appointmentController.CreateAppointment)
 
 		appointment := domain.Appointment{
@@ -124,7 +125,7 @@ func TestAppointmentController(t *testing.T) {
 		appointmentService := application.NewAppointmentService(mockRepo)
 		appointmentController := controllers.NewAppointmentController(appointmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.POST("/appointments", appointmentController.CreateAppointment)
 
 		invalidJSON := `{"pet_id": 1, "veterinarian_id": }`
@@ -150,7 +151,7 @@ func TestAppointmentController(t *testing.T) {
 		appointmentService := application.NewAppointmentService(mockRepo)
 		appointmentController := controllers.NewAppointmentController(appointmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/appointments/:id", appointmentController.FindAppointment)
 
 		expectedAppointment := domain.Appointment{
@@ -186,7 +187,7 @@ func TestAppointmentController(t *testing.T) {
 		appointmentService := application.NewAppointmentService(mockRepo)
 		appointmentController := controllers.NewAppointmentController(appointmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/appointments/:id", appointmentController.FindAppointment)
 
 		// Act
@@ -209,7 +210,7 @@ func TestAppointmentController(t *testing.T) {
 		appointmentService := application.NewAppointmentService(mockRepo)
 		appointmentController := controllers.NewAppointmentController(appointmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/appointments/:id", appointmentController.FindAppointment)
 
 		mockRepo.On("FindByID", uint(999)).Return(domain.Appointment{}, errors.New("appointment not found"))
@@ -236,7 +237,7 @@ func TestAppointmentController(t *testing.T) {
 		appointmentService := application.NewAppointmentService(mockRepo)
 		appointmentController := controllers.NewAppointmentController(appointmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.PUT("/appointments/:id", appointmentController.UpdateAppointment)
 
 		appointment := domain.Appointment{
@@ -275,7 +276,7 @@ func TestAppointmentController(t *testing.T) {
 		appointmentService := application.NewAppointmentService(mockRepo)
 		appointmentController := controllers.NewAppointmentController(appointmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.DELETE("/appointments/:id", appointmentController.DeleteAppointment)
 
 		mockRepo.On("Delete", uint(1)).Return(nil)
@@ -303,7 +304,7 @@ func TestAppointmentController(t *testing.T) {
 		appointmentService := application.NewAppointmentService(mockRepo)
 		appointmentController := controllers.NewAppointmentController(appointmentService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.DELETE("/appointments/:id", appointmentController.DeleteAppointment)
 
 		// Act

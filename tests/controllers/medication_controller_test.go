@@ -7,6 +7,7 @@ import (
 	"go-vet/controllers"
 	"go-vet/domain"
 	"go-vet/tests/mocks"
+	"go-vet/tests/testhelpers"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -22,7 +23,7 @@ func TestMedicationController(t *testing.T) {
 		medicationService := application.NewMedicationService(mockRepo)
 		medicationController := controllers.NewMedicationController(medicationService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/medications", medicationController.FindMedications)
 
 		medications := []domain.Medication{
@@ -53,7 +54,7 @@ func TestMedicationController(t *testing.T) {
 		medicationService := application.NewMedicationService(mockRepo)
 		medicationController := controllers.NewMedicationController(medicationService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.POST("/medications", medicationController.CreateMedication)
 
 		medication := domain.Medication{
@@ -86,7 +87,7 @@ func TestMedicationController(t *testing.T) {
 		medicationService := application.NewMedicationService(mockRepo)
 		medicationController := controllers.NewMedicationController(medicationService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.POST("/medications", medicationController.CreateMedication)
 
 		invalidJSON := []byte(`{"name": "Invalid"`)
@@ -107,7 +108,7 @@ func TestMedicationController(t *testing.T) {
 		medicationService := application.NewMedicationService(mockRepo)
 		medicationController := controllers.NewMedicationController(medicationService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/medications/:id", medicationController.FindMedication)
 
 		medication := domain.Medication{
@@ -140,7 +141,7 @@ func TestMedicationController(t *testing.T) {
 		medicationService := application.NewMedicationService(mockRepo)
 		medicationController := controllers.NewMedicationController(medicationService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/medications/:id", medicationController.FindMedication)
 
 		// Act
@@ -158,7 +159,7 @@ func TestMedicationController(t *testing.T) {
 		medicationService := application.NewMedicationService(mockRepo)
 		medicationController := controllers.NewMedicationController(medicationService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.PUT("/medications/:id", medicationController.UpdateMedication)
 
 		medication := domain.Medication{
@@ -193,7 +194,7 @@ func TestMedicationController(t *testing.T) {
 		medicationService := application.NewMedicationService(mockRepo)
 		medicationController := controllers.NewMedicationController(medicationService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.PUT("/medications/:id", medicationController.UpdateMedication)
 
 		invalidJSON := []byte(`{"name": "Invalid"`)
@@ -214,7 +215,7 @@ func TestMedicationController(t *testing.T) {
 		medicationService := application.NewMedicationService(mockRepo)
 		medicationController := controllers.NewMedicationController(medicationService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.DELETE("/medications/:id", medicationController.DeleteMedication)
 
 		mockRepo.On("Delete", uint(1)).Return(nil)
@@ -239,7 +240,7 @@ func TestMedicationController(t *testing.T) {
 		medicationService := application.NewMedicationService(mockRepo)
 		medicationController := controllers.NewMedicationController(medicationService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.DELETE("/medications/:id", medicationController.DeleteMedication)
 
 		// Act

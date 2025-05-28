@@ -8,6 +8,7 @@ import (
 	"go-vet/controllers"
 	"go-vet/domain"
 	"go-vet/tests/mocks"
+	"go-vet/tests/testhelpers"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -24,7 +25,7 @@ func TestInvoiceController(t *testing.T) {
 		invoiceService := application.NewInvoiceService(mockRepo)
 		invoiceController := controllers.NewInvoiceController(invoiceService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/invoices", invoiceController.FindInvoices)
 
 		expectedInvoices := []domain.Invoice{
@@ -56,7 +57,7 @@ func TestInvoiceController(t *testing.T) {
 		invoiceService := application.NewInvoiceService(mockRepo)
 		invoiceController := controllers.NewInvoiceController(invoiceService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/invoices", invoiceController.FindInvoices)
 
 		mockRepo.On("FindAll").Return([]domain.Invoice{}, errors.New("database error"))
@@ -83,7 +84,7 @@ func TestInvoiceController(t *testing.T) {
 		invoiceService := application.NewInvoiceService(mockRepo)
 		invoiceController := controllers.NewInvoiceController(invoiceService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.POST("/invoices", invoiceController.CreateInvoice)
 
 		invoice := domain.Invoice{
@@ -122,7 +123,7 @@ func TestInvoiceController(t *testing.T) {
 		invoiceService := application.NewInvoiceService(mockRepo)
 		invoiceController := controllers.NewInvoiceController(invoiceService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.POST("/invoices", invoiceController.CreateInvoice)
 
 		invalidJSON := `{"client_id": 1, "total": }`
@@ -148,7 +149,7 @@ func TestInvoiceController(t *testing.T) {
 		invoiceService := application.NewInvoiceService(mockRepo)
 		invoiceController := controllers.NewInvoiceController(invoiceService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/invoices/:id", invoiceController.FindInvoice)
 
 		expectedInvoice := domain.Invoice{
@@ -185,7 +186,7 @@ func TestInvoiceController(t *testing.T) {
 		invoiceService := application.NewInvoiceService(mockRepo)
 		invoiceController := controllers.NewInvoiceController(invoiceService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/invoices/:id", invoiceController.FindInvoice)
 
 		// Act
@@ -208,7 +209,7 @@ func TestInvoiceController(t *testing.T) {
 		invoiceService := application.NewInvoiceService(mockRepo)
 		invoiceController := controllers.NewInvoiceController(invoiceService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.GET("/invoices/:id", invoiceController.FindInvoice)
 
 		mockRepo.On("FindByID", uint(999)).Return(domain.Invoice{}, errors.New("invoice not found"))
@@ -235,7 +236,7 @@ func TestInvoiceController(t *testing.T) {
 		invoiceService := application.NewInvoiceService(mockRepo)
 		invoiceController := controllers.NewInvoiceController(invoiceService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.PUT("/invoices/:id", invoiceController.UpdateInvoice)
 
 		invoice := domain.Invoice{
@@ -275,7 +276,7 @@ func TestInvoiceController(t *testing.T) {
 		invoiceService := application.NewInvoiceService(mockRepo)
 		invoiceController := controllers.NewInvoiceController(invoiceService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.DELETE("/invoices/:id", invoiceController.DeleteInvoice)
 
 		mockRepo.On("Delete", uint(1)).Return(nil)
@@ -303,7 +304,7 @@ func TestInvoiceController(t *testing.T) {
 		invoiceService := application.NewInvoiceService(mockRepo)
 		invoiceController := controllers.NewInvoiceController(invoiceService)
 
-		router := setupTestRouter()
+		router := testhelpers.SetupTestRouter()
 		router.DELETE("/invoices/:id", invoiceController.DeleteInvoice)
 
 		// Act

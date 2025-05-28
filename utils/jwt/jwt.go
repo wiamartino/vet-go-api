@@ -12,9 +12,10 @@ import (
 )
 
 var (
-	jwtKey     []byte
-	jwtIssuer  string
-	jwtTimeout time.Duration
+	jwtKey      []byte
+	jwtIssuer   string
+	jwtTimeout  time.Duration
+	initialized bool
 )
 
 type Claims struct {
@@ -25,6 +26,16 @@ type Claims struct {
 }
 
 func init() {
+	// Try to initialize, but don't fail if JWT_SECRET_KEY is not set
+	// This allows tests to run without having to set environment variables globally
+	initializeJWT()
+}
+
+func initializeJWT() {
+	if initialized {
+		return
+	}
+
 	// Load environment variables
 	err := godotenv.Load()
 	if err != nil {
@@ -34,7 +45,8 @@ func init() {
 	// Get JWT secret key
 	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
 	if jwtSecretKey == "" {
-		logrus.Fatal("JWT_SECRET_KEY must be set in environment")
+		// Don't fail immediately - this allows tests to set environment variables
+		return
 	}
 	jwtKey = []byte(jwtSecretKey)
 
@@ -60,10 +72,46 @@ func init() {
 			jwtTimeout = time.Duration(timeoutHours) * time.Hour
 		}
 	}
+
+	initialized = true
 }
 
 // GenerateToken creates a new JWT token for a user
 func GenerateToken(userID uint, email string, role string) (string, error) {
+	// Ensure JWT is initialized
+	initializeJWT()
+
+	if len(jwtKey) == 0 {
+		jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
+		if jwtSecretKey == "" {
+			return "", errors.New("JWT_SECRET_KEY must be set in environment")
+		}
+		jwtKey = []byte(jwtSecretKey)
+
+		// Also set other defaults if not initialized
+		if jwtIssuer == "" {
+			jwtIssuer = os.Getenv("JWT_ISSUER")
+			if jwtIssuer == "" {
+				jwtIssuer = "vet-go-api"
+			}
+		}
+
+		if jwtTimeout == 0 {
+			jwtTimeoutStr := os.Getenv("JWT_TIMEOUT_HOURS")
+			if jwtTimeoutStr == "" {
+				jwtTimeout = 24 * time.Hour
+			} else {
+				var timeoutHours int
+				_, err := fmt.Sscanf(jwtTimeoutStr, "%d", &timeoutHours)
+				if err != nil {
+					jwtTimeout = 24 * time.Hour
+				} else {
+					jwtTimeout = time.Duration(timeoutHours) * time.Hour
+				}
+			}
+		}
+	}
+
 	expirationTime := time.Now().Add(jwtTimeout)
 
 	claims := &Claims{
