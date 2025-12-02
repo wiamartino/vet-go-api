@@ -249,6 +249,7 @@ func TestAppointmentController(t *testing.T) {
 			ReasonForAppointment: "Updated appointment",
 		}
 
+		mockRepo.On("FindByID", uint(1)).Return(appointment, nil)
 		mockRepo.On("Update", mock.AnythingOfType("*domain.Appointment")).Return(nil)
 
 		jsonData, _ := json.Marshal(appointment)
@@ -279,6 +280,8 @@ func TestAppointmentController(t *testing.T) {
 		router := testhelpers.SetupTestRouter()
 		router.DELETE("/appointments/:id", appointmentController.DeleteAppointment)
 
+		expectedAppointment := domain.Appointment{AppointmentID: 1}
+		mockRepo.On("FindByID", uint(1)).Return(expectedAppointment, nil)
 		mockRepo.On("Delete", uint(1)).Return(nil)
 
 		// Act

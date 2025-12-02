@@ -94,6 +94,13 @@ func (ctrl *AppointmentController) DeleteAppointment(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusBadRequest, "Invalid appointment ID")
 		return
 	}
+
+	// Check if appointment exists before attempting to delete
+	if _, err := ctrl.service.GetAppointmentByID(uint(appointmentID)); err != nil {
+		utils.RespondWithError(c, http.StatusNotFound, "Appointment not found")
+		return
+	}
+
 	if err := ctrl.service.DeleteAppointment(uint(appointmentID)); err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return

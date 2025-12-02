@@ -43,10 +43,13 @@ func TestInvoiceController(t *testing.T) {
 		// Assert
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		var invoices []domain.Invoice
-		err := json.Unmarshal(w.Body.Bytes(), &invoices)
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Len(t, invoices, 2)
+		assert.Equal(t, "success", response["status"])
+
+		data := response["data"].([]interface{})
+		assert.Len(t, data, 2)
 
 		mockRepo.AssertExpectations(t)
 	})
@@ -107,12 +110,15 @@ func TestInvoiceController(t *testing.T) {
 		// Assert
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		var responseInvoice domain.Invoice
-		err := json.Unmarshal(w.Body.Bytes(), &responseInvoice)
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Equal(t, invoice.ClientID, responseInvoice.ClientID)
-		assert.Equal(t, invoice.AppointmentID, responseInvoice.AppointmentID)
-		assert.Equal(t, invoice.Total, responseInvoice.Total)
+		assert.Equal(t, "success", response["status"])
+
+		data := response["data"].(map[string]interface{})
+		assert.Equal(t, float64(invoice.ClientID), data["client_id"])
+		assert.Equal(t, float64(invoice.AppointmentID), data["appointment_id"])
+		assert.Equal(t, invoice.Total, data["total"])
 
 		mockRepo.AssertExpectations(t)
 	})
@@ -170,12 +176,15 @@ func TestInvoiceController(t *testing.T) {
 		// Assert
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		var responseInvoice domain.Invoice
-		err := json.Unmarshal(w.Body.Bytes(), &responseInvoice)
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Equal(t, expectedInvoice.InvoiceID, responseInvoice.InvoiceID)
-		assert.Equal(t, expectedInvoice.ClientID, responseInvoice.ClientID)
-		assert.Equal(t, expectedInvoice.Total, responseInvoice.Total)
+		assert.Equal(t, "success", response["status"])
+
+		data := response["data"].(map[string]interface{})
+		assert.Equal(t, float64(expectedInvoice.InvoiceID), data["invoice_id"])
+		assert.Equal(t, float64(expectedInvoice.ClientID), data["client_id"])
+		assert.Equal(t, expectedInvoice.Total, data["total"])
 
 		mockRepo.AssertExpectations(t)
 	})
@@ -247,6 +256,7 @@ func TestInvoiceController(t *testing.T) {
 			Date:          time.Now(),
 		}
 
+		mockRepo.On("FindByID", uint(1)).Return(invoice, nil)
 		mockRepo.On("Update", mock.AnythingOfType("*domain.Invoice")).Return(nil)
 
 		jsonData, _ := json.Marshal(invoice)
@@ -260,12 +270,15 @@ func TestInvoiceController(t *testing.T) {
 		// Assert
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		var responseInvoice domain.Invoice
-		err := json.Unmarshal(w.Body.Bytes(), &responseInvoice)
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Equal(t, invoice.ClientID, responseInvoice.ClientID)
-		assert.Equal(t, invoice.AppointmentID, responseInvoice.AppointmentID)
-		assert.Equal(t, invoice.Total, responseInvoice.Total)
+		assert.Equal(t, "success", response["status"])
+
+		data := response["data"].(map[string]interface{})
+		assert.Equal(t, float64(invoice.ClientID), data["client_id"])
+		assert.Equal(t, float64(invoice.AppointmentID), data["appointment_id"])
+		assert.Equal(t, invoice.Total, data["total"])
 
 		mockRepo.AssertExpectations(t)
 	})

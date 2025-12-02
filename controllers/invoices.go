@@ -25,7 +25,7 @@ func (ctrl *InvoiceController) FindInvoices(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithData(c, http.StatusOK, invoices)
+	utils.RespondWithSuccess(c, http.StatusOK, invoices)
 }
 
 func (ctrl *InvoiceController) CreateInvoice(c *gin.Context) {
@@ -41,7 +41,7 @@ func (ctrl *InvoiceController) CreateInvoice(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithData(c, http.StatusOK, invoice)
+	utils.RespondWithSuccess(c, http.StatusOK, invoice)
 }
 
 func (ctrl *InvoiceController) FindInvoice(c *gin.Context) {
@@ -58,7 +58,7 @@ func (ctrl *InvoiceController) FindInvoice(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithData(c, http.StatusOK, invoice)
+	utils.RespondWithSuccess(c, http.StatusOK, invoice)
 }
 
 func (ctrl *InvoiceController) UpdateInvoice(c *gin.Context) {
@@ -88,7 +88,7 @@ func (ctrl *InvoiceController) UpdateInvoice(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithData(c, http.StatusOK, invoice)
+	utils.RespondWithSuccess(c, http.StatusOK, invoice)
 }
 
 func (ctrl *InvoiceController) DeleteInvoice(c *gin.Context) {

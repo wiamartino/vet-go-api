@@ -42,10 +42,13 @@ func TestTreatmentController(t *testing.T) {
 		// Assert
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		var treatments []domain.Treatment
-		err := json.Unmarshal(w.Body.Bytes(), &treatments)
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Len(t, treatments, 2)
+		assert.Equal(t, "success", response["status"])
+
+		data := response["data"].([]interface{})
+		assert.Len(t, data, 2)
 
 		mockRepo.AssertExpectations(t)
 	})
@@ -105,12 +108,15 @@ func TestTreatmentController(t *testing.T) {
 		// Assert
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		var responseTreatment domain.Treatment
-		err := json.Unmarshal(w.Body.Bytes(), &responseTreatment)
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Equal(t, treatment.Name, responseTreatment.Name)
-		assert.Equal(t, treatment.Description, responseTreatment.Description)
-		assert.Equal(t, treatment.Cost, responseTreatment.Cost)
+		assert.Equal(t, "success", response["status"])
+
+		data := response["data"].(map[string]interface{})
+		assert.Equal(t, treatment.Name, data["name"])
+		assert.Equal(t, treatment.Description, data["description"])
+		assert.Equal(t, treatment.Cost, data["cost"])
 
 		mockRepo.AssertExpectations(t)
 	})
@@ -167,12 +173,15 @@ func TestTreatmentController(t *testing.T) {
 		// Assert
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		var responseTreatment domain.Treatment
-		err := json.Unmarshal(w.Body.Bytes(), &responseTreatment)
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Equal(t, expectedTreatment.TreatmentID, responseTreatment.TreatmentID)
-		assert.Equal(t, expectedTreatment.Name, responseTreatment.Name)
-		assert.Equal(t, expectedTreatment.Cost, responseTreatment.Cost)
+		assert.Equal(t, "success", response["status"])
+
+		data := response["data"].(map[string]interface{})
+		assert.Equal(t, float64(expectedTreatment.TreatmentID), data["treatment_id"])
+		assert.Equal(t, expectedTreatment.Name, data["name"])
+		assert.Equal(t, expectedTreatment.Cost, data["cost"])
 
 		mockRepo.AssertExpectations(t)
 	})
@@ -243,6 +252,7 @@ func TestTreatmentController(t *testing.T) {
 			Cost:        250.00,
 		}
 
+		mockRepo.On("FindByID", uint(1)).Return(treatment, nil)
 		mockRepo.On("Update", mock.AnythingOfType("*domain.Treatment")).Return(nil)
 
 		jsonData, _ := json.Marshal(treatment)
@@ -256,17 +266,20 @@ func TestTreatmentController(t *testing.T) {
 		// Assert
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		var responseTreatment domain.Treatment
-		err := json.Unmarshal(w.Body.Bytes(), &responseTreatment)
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Equal(t, treatment.Name, responseTreatment.Name)
-		assert.Equal(t, treatment.Description, responseTreatment.Description)
-		assert.Equal(t, treatment.Cost, responseTreatment.Cost)
+		assert.Equal(t, "success", response["status"])
+
+		data := response["data"].(map[string]interface{})
+		assert.Equal(t, treatment.Name, data["name"])
+		assert.Equal(t, treatment.Description, data["description"])
+		assert.Equal(t, treatment.Cost, data["cost"])
 
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("DeleteTreatment - should delete treatment successfully", func(t *testing.T) {
+	t.Run("CreateTreatment - should return error for invalid JSON", func(t *testing.T) {
 		// Arrange
 		mockRepo := new(mocks.MockTreatmentRepository)
 		treatmentService := application.NewTreatmentService(mockRepo)
@@ -275,6 +288,8 @@ func TestTreatmentController(t *testing.T) {
 		router := testhelpers.SetupTestRouter()
 		router.DELETE("/treatments/:id", treatmentController.DeleteTreatment)
 
+		expectedTreatment := domain.Treatment{TreatmentID: 1}
+		mockRepo.On("FindByID", uint(1)).Return(expectedTreatment, nil)
 		mockRepo.On("Delete", uint(1)).Return(nil)
 
 		// Act

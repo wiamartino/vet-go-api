@@ -247,6 +247,7 @@ func TestVeterinarianController(t *testing.T) {
 			Email:          "updated@vetclinic.com",
 		}
 
+		mockRepo.On("FindByID", uint(1)).Return(veterinarian, nil)
 		mockRepo.On("Update", &veterinarian).Return(nil)
 
 		jsonData, _ := json.Marshal(veterinarian)

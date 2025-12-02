@@ -24,7 +24,7 @@ func (ctrl *TreatmentController) FindTreatments(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.RespondWithData(c, http.StatusOK, treatments)
+	utils.RespondWithSuccess(c, http.StatusOK, treatments)
 }
 
 func (ctrl *TreatmentController) CreateTreatment(c *gin.Context) {
@@ -37,7 +37,7 @@ func (ctrl *TreatmentController) CreateTreatment(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.RespondWithData(c, http.StatusOK, treatment)
+	utils.RespondWithSuccess(c, http.StatusOK, treatment)
 }
 
 func (ctrl *TreatmentController) FindTreatment(c *gin.Context) {
@@ -52,7 +52,7 @@ func (ctrl *TreatmentController) FindTreatment(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusNotFound, "Treatment not found")
 		return
 	}
-	utils.RespondWithData(c, http.StatusOK, treatment)
+	utils.RespondWithSuccess(c, http.StatusOK, treatment)
 }
 
 func (ctrl *TreatmentController) UpdateTreatment(c *gin.Context) {
@@ -79,7 +79,7 @@ func (ctrl *TreatmentController) UpdateTreatment(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.RespondWithData(c, http.StatusOK, treatment)
+	utils.RespondWithSuccess(c, http.StatusOK, treatment)
 }
 
 func (ctrl *TreatmentController) DeleteTreatment(c *gin.Context) {
@@ -89,6 +89,13 @@ func (ctrl *TreatmentController) DeleteTreatment(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusBadRequest, "Invalid treatment ID")
 		return
 	}
+
+	// Check if treatment exists before attempting to delete
+	if _, err := ctrl.service.GetTreatmentByID(uint(treatmentID)); err != nil {
+		utils.RespondWithError(c, http.StatusNotFound, "Treatment not found")
+		return
+	}
+
 	if err := ctrl.service.DeleteTreatment(uint(treatmentID)); err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return

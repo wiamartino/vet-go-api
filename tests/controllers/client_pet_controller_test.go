@@ -276,6 +276,8 @@ func TestPetController(t *testing.T) {
 		router := testhelpers.SetupTestRouter()
 		router.DELETE("/pets/:id", petController.DeletePet)
 
+		expectedPet := domain.Pet{PetID: 1}
+		mockRepo.On("FindByID", uint(1)).Return(expectedPet, nil)
 		mockRepo.On("Delete", uint(1)).Return(nil)
 
 		// Act

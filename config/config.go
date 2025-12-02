@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -99,7 +100,7 @@ func LoadConfig() error {
 
 	// Validate required configuration
 	if config.JWT.SecretKey == "" {
-		logrus.Fatal("JWT_SECRET_KEY is required")
+		return fmt.Errorf("JWT_SECRET_KEY is required")
 	}
 
 	if config.Database.Password == "" {

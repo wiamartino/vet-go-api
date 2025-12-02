@@ -93,6 +93,13 @@ func (ctrl *PetController) DeletePet(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusBadRequest, "Invalid pet ID")
 		return
 	}
+
+	// Check if pet exists before attempting to delete
+	if _, err := ctrl.service.GetPetByID(uint(petID)); err != nil {
+		utils.RespondWithError(c, http.StatusNotFound, "Pet not found")
+		return
+	}
+
 	err = ctrl.service.DeletePet(uint(petID))
 	if err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())

@@ -169,6 +169,7 @@ func TestMedicationController(t *testing.T) {
 			Price:       20.00,
 		}
 
+		mockRepo.On("FindByID", uint(1)).Return(medication, nil)
 		mockRepo.On("Update", &medication).Return(nil)
 
 		jsonData, _ := json.Marshal(medication)
