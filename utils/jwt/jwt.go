@@ -94,6 +94,7 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 	// Ensure JWT is initialized
 	initializeJWT()
 
+	// Check if initialized (without holding lock during potential re-initialization)
 	mu.RLock()
 	initialized := isInitialized
 	mu.RUnlock()
@@ -101,8 +102,32 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 	// If not initialized, try to load config again (useful for tests)
 	if !initialized {
 		mu.Lock()
+		// Double-check after acquiring write lock
 		if !isInitialized {
-			loadJWTConfig()
+			// Load directly without calling loadJWTConfig which also tries to lock
+			jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
+			if jwtSecretKey != "" {
+				jwtKey = []byte(jwtSecretKey)
+				isInitialized = true
+
+				jwtIssuer = os.Getenv("JWT_ISSUER")
+				if jwtIssuer == "" {
+					jwtIssuer = "vet-go-api"
+				}
+
+				jwtTimeoutStr := os.Getenv("JWT_TIMEOUT_HOURS")
+				if jwtTimeoutStr == "" {
+					jwtTimeout = 24 * time.Hour
+				} else {
+					var timeoutHours int
+					_, err := fmt.Sscanf(jwtTimeoutStr, "%d", &timeoutHours)
+					if err != nil {
+						jwtTimeout = 24 * time.Hour
+					} else {
+						jwtTimeout = time.Duration(timeoutHours) * time.Hour
+					}
+				}
+			}
 		}
 		mu.Unlock()
 	}
