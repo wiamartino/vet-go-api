@@ -44,13 +44,12 @@ func (ctrl *AppointmentController) CreateAppointment(c *gin.Context) {
 
 func (ctrl *AppointmentController) FindAppointment(c *gin.Context) {
 
-	idParam, err := strconv.Atoi(c.Param("id"))
+	appointmentID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		utils.RespondWithError(c, http.StatusBadRequest, "Invalid appointment ID")
 		return
 	}
-	id := uint(idParam)
-	appointment, err := ctrl.service.GetAppointmentByID(id)
+	appointment, err := ctrl.service.GetAppointmentByID(uint(appointmentID))
 	if err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -83,13 +82,12 @@ func (ctrl *AppointmentController) UpdateAppointment(c *gin.Context) {
 
 func (ctrl *AppointmentController) DeleteAppointment(c *gin.Context) {
 
-	idParam, err := strconv.Atoi(c.Param("id"))
+	appointmentID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		utils.RespondWithError(c, http.StatusBadRequest, "Invalid appointment ID")
 		return
 	}
-	id := uint(idParam)
-	if err := ctrl.service.DeleteAppointment(id); err != nil {
+	if err := ctrl.service.DeleteAppointment(uint(appointmentID)); err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}

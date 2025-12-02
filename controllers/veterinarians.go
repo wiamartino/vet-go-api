@@ -41,13 +41,12 @@ func (ctrl *VeterinarianController) CreateVeterinarian(c *gin.Context) {
 }
 
 func (ctrl *VeterinarianController) FindVeterinarian(c *gin.Context) {
-	idParam, err := strconv.Atoi(c.Param("id"))
+	veterinarianID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		utils.RespondWithError(c, http.StatusBadRequest, "Invalid ID")
 		return
 	}
-	id := uint(idParam)
-	veterinarian, err := ctrl.service.GetVeterinarianByID(id)
+	veterinarian, err := ctrl.service.GetVeterinarianByID(uint(veterinarianID))
 	if err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -80,12 +79,12 @@ func (ctrl *VeterinarianController) UpdateVeterinarian(c *gin.Context) {
 
 func (ctrl *VeterinarianController) DeleteVeterinarian(c *gin.Context) {
 
-	idParam, err := strconv.Atoi(c.Param("id"))
+	veterinarianID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		utils.RespondWithError(c, http.StatusBadRequest, "Invalid ID")
 		return
 	}
-	id := uint(idParam)
+	id := uint(veterinarianID)
 	if _, err := ctrl.service.GetVeterinarianByID(id); err != nil {
 		utils.RespondWithError(c, http.StatusNotFound, "Veterinarian not found")
 		return
