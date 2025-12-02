@@ -62,6 +62,13 @@ func (ctrl *TreatmentController) UpdateTreatment(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusBadRequest, "Invalid treatment ID")
 		return
 	}
+
+	// Check if treatment exists
+	if _, err := ctrl.service.GetTreatmentByID(uint(treatmentID)); err != nil {
+		utils.RespondWithError(c, http.StatusNotFound, "Treatment not found")
+		return
+	}
+
 	var treatment domain.Treatment
 	if err := c.ShouldBindJSON(&treatment); err != nil {
 		utils.RespondWithError(c, http.StatusBadRequest, err.Error())

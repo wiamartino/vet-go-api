@@ -70,6 +70,13 @@ func (ctrl *AppointmentController) UpdateAppointment(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusBadRequest, "Invalid appointment ID")
 		return
 	}
+
+	// Check if appointment exists
+	if _, err := ctrl.service.GetAppointmentByID(uint(appointmentID)); err != nil {
+		utils.RespondWithError(c, http.StatusNotFound, "Appointment not found")
+		return
+	}
+
 	appointment.AppointmentID = uint(appointmentID)
 
 	if err := ctrl.service.UpdateAppointment(&appointment); err != nil {

@@ -75,6 +75,13 @@ func (ctrl *InvoiceController) UpdateInvoice(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusBadRequest, "Invalid invoice ID")
 		return
 	}
+
+	// Check if invoice exists
+	if _, err := ctrl.service.GetInvoiceByID(uint(invoiceID)); err != nil {
+		utils.RespondWithError(c, http.StatusNotFound, "Invoice not found")
+		return
+	}
+
 	invoice.InvoiceID = uint(invoiceID)
 	if err := ctrl.service.UpdateInvoice(&invoice); err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())

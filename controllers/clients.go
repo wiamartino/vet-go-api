@@ -73,6 +73,13 @@ func (ctrl *ClientController) UpdateClient(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusBadRequest, "Invalid client ID")
 		return
 	}
+
+	// Check if client exists
+	if _, err := ctrl.service.GetClientByID(uint(clientID)); err != nil {
+		utils.RespondWithError(c, http.StatusNotFound, "Client not found")
+		return
+	}
+
 	client.ClientID = uint(clientID)
 
 	if err := ctrl.service.UpdateClient(&client); err != nil {

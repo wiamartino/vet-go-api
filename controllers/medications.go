@@ -76,6 +76,13 @@ func (ctrl *MedicationController) UpdateMedication(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusBadRequest, "Invalid medication ID")
 		return
 	}
+
+	// Check if medication exists
+	if _, err := ctrl.service.GetMedicationByID(uint(medicationID)); err != nil {
+		utils.RespondWithError(c, http.StatusNotFound, "Medication not found")
+		return
+	}
+
 	medication.ID = uint(medicationID)
 	if err := ctrl.service.UpdateMedication(&medication); err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())

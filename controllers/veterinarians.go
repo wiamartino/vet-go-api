@@ -68,6 +68,13 @@ func (ctrl *VeterinarianController) UpdateVeterinarian(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusBadRequest, "Invalid ID")
 		return
 	}
+
+	// Check if veterinarian exists
+	if _, err := ctrl.service.GetVeterinarianByID(uint(veterinarianID)); err != nil {
+		utils.RespondWithError(c, http.StatusNotFound, "Veterinarian not found")
+		return
+	}
+
 	veterinarian.VeterinarianID = uint(veterinarianID)
 	if err := ctrl.service.UpdateVeterinarian(&veterinarian); err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, "Failed to update veterinarian")

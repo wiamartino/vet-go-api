@@ -69,6 +69,13 @@ func (ctrl *PetController) UpdatePet(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusBadRequest, "Invalid pet ID")
 		return
 	}
+
+	// Check if pet exists
+	if _, err := ctrl.service.GetPetByID(uint(petID)); err != nil {
+		utils.RespondWithError(c, http.StatusNotFound, "Pet not found")
+		return
+	}
+
 	pet.PetID = uint(petID)
 	err = ctrl.service.UpdatePet(&pet)
 	if err != nil {
