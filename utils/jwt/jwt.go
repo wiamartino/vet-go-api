@@ -94,21 +94,22 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 	// Ensure JWT is initialized
 	initializeJWT()
 
-	// Check if initialized (without holding lock during potential re-initialization)
+	// Get all config values under a single read lock
 	mu.RLock()
+	key := jwtKey
+	issuer := jwtIssuer
+	timeout := jwtTimeout
 	initialized := isInitialized
 	mu.RUnlock()
 
-	// If not initialized, try to load config again (useful for tests)
+	// If not initialized, try one more time with write lock
 	if !initialized {
 		mu.Lock()
-		// Double-check after acquiring write lock
+		// Check again after acquiring write lock
 		if !isInitialized {
-			// Load directly without calling loadJWTConfig which also tries to lock
 			jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
 			if jwtSecretKey != "" {
 				jwtKey = []byte(jwtSecretKey)
-				isInitialized = true
 
 				jwtIssuer = os.Getenv("JWT_ISSUER")
 				if jwtIssuer == "" {
@@ -127,19 +128,23 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 						jwtTimeout = time.Duration(timeoutHours) * time.Hour
 					}
 				}
+
+				isInitialized = true
+				key = jwtKey
+				issuer = jwtIssuer
+				timeout = jwtTimeout
 			}
+		} else {
+			// Another goroutine initialized it
+			key = jwtKey
+			issuer = jwtIssuer
+			timeout = jwtTimeout
 		}
 		mu.Unlock()
 	}
 
-	mu.RLock()
-	keyLen := len(jwtKey)
-	issuer := jwtIssuer
-	timeout := jwtTimeout
-	mu.RUnlock()
-
 	// Fail if JWT key is not initialized
-	if keyLen == 0 {
+	if len(key) == 0 {
 		return "", errors.New("JWT_SECRET_KEY must be set in environment")
 	}
 
@@ -158,11 +163,6 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	mu.RLock()
-	key := jwtKey
-	mu.RUnlock()
-
 	tokenString, err := token.SignedString(key)
 	if err != nil {
 		return "", fmt.Errorf("failed to sign token: %w", err)
