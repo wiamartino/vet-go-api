@@ -28,11 +28,13 @@ type AuditLog struct {
 
 var (
 	dbInstance *DB
-	once       sync.Once
+	mu         sync.RWMutex
 )
 
 // GetDB returns the current database instance
 func GetDB() *DB {
+	mu.RLock()
+	defer mu.RUnlock()
 	return dbInstance
 }
 
@@ -70,25 +72,33 @@ func getDSN() string {
 
 // ConnectDatabase initializes the database connection
 func ConnectDatabase() (*DB, error) {
-	var err error
-	once.Do(func() {
-		database, dbErr := gorm.Open(postgres.Open(getDSN()), &gorm.Config{})
-		if dbErr != nil {
-			err = fmt.Errorf("failed to connect to database: %w", dbErr)
-			return
-		}
-
-		if migErr := database.AutoMigrate(models()...); migErr != nil {
-			err = fmt.Errorf("failed to migrate database: %w", migErr)
-			return
-		}
-
-		dbInstance = &DB{database}
-	})
-
-	if err != nil {
-		return nil, err
+	// Check if already connected
+	mu.RLock()
+	if dbInstance != nil {
+		mu.RUnlock()
+		return dbInstance, nil
 	}
+	mu.RUnlock()
+
+	// Acquire write lock to initialize
+	mu.Lock()
+	defer mu.Unlock()
+
+	// Double-check after acquiring write lock
+	if dbInstance != nil {
+		return dbInstance, nil
+	}
+
+	database, err := gorm.Open(postgres.Open(getDSN()), &gorm.Config{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+
+	if err := database.AutoMigrate(models()...); err != nil {
+		return nil, fmt.Errorf("failed to migrate database: %w", err)
+	}
+
+	dbInstance = &DB{database}
 	return dbInstance, nil
 }
 

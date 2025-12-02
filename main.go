@@ -22,13 +22,17 @@ func main() {
 
 	// Drop tables and seed database (ONLY in development mode)
 	env := os.Getenv("GO_ENV")
-	if env == "development" || env == "dev" {
-		logrus.Warning("Running in development mode - dropping and seeding database")
+	// Explicit safeguard: only run in development if explicitly set
+	// Production/empty defaults to safe mode
+	if (env == "development" || env == "dev") && env != "production" && env != "prod" {
+		logrus.Warning("⚠️  Running in DEVELOPMENT mode - dropping and seeding database")
+		logrus.Warning("⚠️  This will DELETE ALL DATA in the database")
 		if err := database.DropAllTablesAndSeed(); err != nil {
 			panic("Failed to drop tables and seed database: " + err.Error())
 		}
+		logrus.Info("✓ Database dropped and seeded successfully")
 	} else {
-		logrus.Info("Production mode - skipping database drop and seed")
+		logrus.Info("Production/Safe mode - skipping database drop and seed")
 	}
 
 	// Setup router with existing database connection

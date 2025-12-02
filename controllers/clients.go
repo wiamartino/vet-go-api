@@ -99,6 +99,12 @@ func (ctrl *ClientController) DeleteClient(c *gin.Context) {
 		return
 	}
 
+	// Check if client exists before attempting to delete
+	if _, err := ctrl.service.GetClientByID(uint(clientID)); err != nil {
+		utils.RespondWithError(c, http.StatusNotFound, "Client not found")
+		return
+	}
+
 	if err = ctrl.service.DeleteClient(uint(clientID)); err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return

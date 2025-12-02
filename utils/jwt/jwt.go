@@ -89,41 +89,23 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 	timeout := jwtTimeout
 	mu.RUnlock()
 
+	// If key is not initialized, try one more time (for test scenarios)
+	// This handles the case where env vars are set after package init
 	if keyLen == 0 {
-		jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
-		if jwtSecretKey == "" {
-			return "", errors.New("JWT_SECRET_KEY must be set in environment")
-		}
-
-		mu.Lock()
-		jwtKey = []byte(jwtSecretKey)
-
-		// Also set other defaults if not initialized
-		if jwtIssuer == "" {
-			jwtIssuer = os.Getenv("JWT_ISSUER")
-			if jwtIssuer == "" {
-				jwtIssuer = "vet-go-api"
-			}
-		}
-
-		if jwtTimeout == 0 {
-			jwtTimeoutStr := os.Getenv("JWT_TIMEOUT_HOURS")
-			if jwtTimeoutStr == "" {
-				jwtTimeout = 24 * time.Hour
-			} else {
-				var timeoutHours int
-				_, err := fmt.Sscanf(jwtTimeoutStr, "%d", &timeoutHours)
-				if err != nil {
-					jwtTimeout = 24 * time.Hour
-				} else {
-					jwtTimeout = time.Duration(timeoutHours) * time.Hour
-				}
-			}
-		}
-
+		// Reset once to allow re-initialization
+		once = sync.Once{}
+		initializeJWT()
+		
+		mu.RLock()
+		keyLen = len(jwtKey)
 		issuer = jwtIssuer
 		timeout = jwtTimeout
-		mu.Unlock()
+		mu.RUnlock()
+		
+		// Fail if still not initialized
+		if keyLen == 0 {
+			return "", errors.New("JWT_SECRET_KEY must be set in environment")
+		}
 	}
 
 	expirationTime := time.Now().Add(timeout)
