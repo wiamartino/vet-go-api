@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -12,10 +13,11 @@ import (
 )
 
 var (
-	jwtKey      []byte
-	jwtIssuer   string
-	jwtTimeout  time.Duration
-	initialized bool
+	jwtKey     []byte
+	jwtIssuer  string
+	jwtTimeout time.Duration
+	once       sync.Once
+	mu         sync.RWMutex
 )
 
 type Claims struct {
@@ -32,48 +34,48 @@ func init() {
 }
 
 func initializeJWT() {
-	if initialized {
-		return
-	}
-
-	// Load environment variables
-	err := godotenv.Load()
-	if err != nil {
-		logrus.Warning("Error loading .env file, using default values")
-	}
-
-	// Get JWT secret key
-	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
-	if jwtSecretKey == "" {
-		// Don't fail immediately - this allows tests to set environment variables
-		return
-	}
-	jwtKey = []byte(jwtSecretKey)
-
-	// Get JWT issuer (optional)
-	jwtIssuer = os.Getenv("JWT_ISSUER")
-	if jwtIssuer == "" {
-		jwtIssuer = "vet-go-api"
-		logrus.Info("JWT_ISSUER not set, using default: ", jwtIssuer)
-	}
-
-	// Get JWT timeout (optional)
-	jwtTimeoutStr := os.Getenv("JWT_TIMEOUT_HOURS")
-	if jwtTimeoutStr == "" {
-		jwtTimeout = 24 * time.Hour // Default to 24 hours
-		logrus.Info("JWT_TIMEOUT_HOURS not set, using default: 24 hours")
-	} else {
-		var timeoutHours int
-		_, err := fmt.Sscanf(jwtTimeoutStr, "%d", &timeoutHours)
+	once.Do(func() {
+		// Load environment variables
+		err := godotenv.Load()
 		if err != nil {
-			jwtTimeout = 24 * time.Hour
-			logrus.Warning("Invalid JWT_TIMEOUT_HOURS, using default: 24 hours")
-		} else {
-			jwtTimeout = time.Duration(timeoutHours) * time.Hour
+			logrus.Warning("Error loading .env file, using default values")
 		}
-	}
 
-	initialized = true
+		// Get JWT secret key
+		jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
+		if jwtSecretKey == "" {
+			// Don't fail immediately - this allows tests to set environment variables
+			return
+		}
+
+		mu.Lock()
+		defer mu.Unlock()
+
+		jwtKey = []byte(jwtSecretKey)
+
+		// Get JWT issuer (optional)
+		jwtIssuer = os.Getenv("JWT_ISSUER")
+		if jwtIssuer == "" {
+			jwtIssuer = "vet-go-api"
+			logrus.Info("JWT_ISSUER not set, using default: ", jwtIssuer)
+		}
+
+		// Get JWT timeout (optional)
+		jwtTimeoutStr := os.Getenv("JWT_TIMEOUT_HOURS")
+		if jwtTimeoutStr == "" {
+			jwtTimeout = 24 * time.Hour // Default to 24 hours
+			logrus.Info("JWT_TIMEOUT_HOURS not set, using default: 24 hours")
+		} else {
+			var timeoutHours int
+			_, err := fmt.Sscanf(jwtTimeoutStr, "%d", &timeoutHours)
+			if err != nil {
+				jwtTimeout = 24 * time.Hour
+				logrus.Warning("Invalid JWT_TIMEOUT_HOURS, using default: 24 hours")
+			} else {
+				jwtTimeout = time.Duration(timeoutHours) * time.Hour
+			}
+		}
+	})
 }
 
 // GenerateToken creates a new JWT token for a user
@@ -81,11 +83,19 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 	// Ensure JWT is initialized
 	initializeJWT()
 
-	if len(jwtKey) == 0 {
+	mu.RLock()
+	keyLen := len(jwtKey)
+	issuer := jwtIssuer
+	timeout := jwtTimeout
+	mu.RUnlock()
+
+	if keyLen == 0 {
 		jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
 		if jwtSecretKey == "" {
 			return "", errors.New("JWT_SECRET_KEY must be set in environment")
 		}
+
+		mu.Lock()
 		jwtKey = []byte(jwtSecretKey)
 
 		// Also set other defaults if not initialized
@@ -110,9 +120,13 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 				}
 			}
 		}
+
+		issuer = jwtIssuer
+		timeout = jwtTimeout
+		mu.Unlock()
 	}
 
-	expirationTime := time.Now().Add(jwtTimeout)
+	expirationTime := time.Now().Add(timeout)
 
 	claims := &Claims{
 		UserID: userID,
@@ -121,13 +135,18 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 			IssuedAt:  time.Now().Unix(),
-			Issuer:    jwtIssuer,
+			Issuer:    issuer,
 			Subject:   email,
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(jwtKey)
+
+	mu.RLock()
+	key := jwtKey
+	mu.RUnlock()
+
+	tokenString, err := token.SignedString(key)
 	if err != nil {
 		return "", fmt.Errorf("failed to sign token: %w", err)
 	}
@@ -139,12 +158,16 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 func ValidateToken(tokenString string) (*Claims, error) {
 	claims := &Claims{}
 
+	mu.RLock()
+	key := jwtKey
+	mu.RUnlock()
+
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		// Validate the signing method
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return jwtKey, nil
+		return key, nil
 	})
 
 	if err != nil {
