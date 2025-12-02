@@ -3,6 +3,7 @@ package middlewares
 
 import (
 	"net/http"
+	"sync/atomic"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -18,9 +19,12 @@ func MetricsMiddleware() gin.HandlerFunc {
 		c.Next()
 
 		latency := time.Since(start)
-		totalRequests++
+		reqCount := atomic.AddInt64(&totalRequests, 1)
+		errCount := totalErrors
 		if c.Writer.Status() >= http.StatusBadRequest {
-			totalErrors++
+			errCount = atomic.AddInt64(&totalErrors, 1)
+		} else {
+			errCount = atomic.LoadInt64(&totalErrors)
 		}
 
 		logrus.WithFields(logrus.Fields{
@@ -28,8 +32,8 @@ func MetricsMiddleware() gin.HandlerFunc {
 			"method":        c.Request.Method,
 			"path":          c.Request.URL.Path,
 			"latency":       latency,
-			"totalRequests": totalRequests,
-			"totalErrors":   totalErrors,
+			"totalRequests": reqCount,
+			"totalErrors":   errCount,
 		}).Info("Request metrics")
 	}
 }
