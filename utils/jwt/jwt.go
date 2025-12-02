@@ -13,11 +13,12 @@ import (
 )
 
 var (
-	jwtKey     []byte
-	jwtIssuer  string
-	jwtTimeout time.Duration
-	once       sync.Once
-	mu         sync.RWMutex
+	jwtKey        []byte
+	jwtIssuer     string
+	jwtTimeout    time.Duration
+	once          sync.Once
+	mu            sync.RWMutex
+	isInitialized bool
 )
 
 type Claims struct {
@@ -35,47 +36,57 @@ func init() {
 
 func initializeJWT() {
 	once.Do(func() {
-		// Load environment variables
-		err := godotenv.Load()
-		if err != nil {
-			logrus.Warning("Error loading .env file, using default values")
-		}
-
-		// Get JWT secret key
-		jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
-		if jwtSecretKey == "" {
-			// Don't fail immediately - this allows tests to set environment variables
-			return
-		}
-
-		mu.Lock()
-		defer mu.Unlock()
-
-		jwtKey = []byte(jwtSecretKey)
-
-		// Get JWT issuer (optional)
-		jwtIssuer = os.Getenv("JWT_ISSUER")
-		if jwtIssuer == "" {
-			jwtIssuer = "vet-go-api"
-			logrus.Info("JWT_ISSUER not set, using default: ", jwtIssuer)
-		}
-
-		// Get JWT timeout (optional)
-		jwtTimeoutStr := os.Getenv("JWT_TIMEOUT_HOURS")
-		if jwtTimeoutStr == "" {
-			jwtTimeout = 24 * time.Hour // Default to 24 hours
-			logrus.Info("JWT_TIMEOUT_HOURS not set, using default: 24 hours")
-		} else {
-			var timeoutHours int
-			_, err := fmt.Sscanf(jwtTimeoutStr, "%d", &timeoutHours)
-			if err != nil {
-				jwtTimeout = 24 * time.Hour
-				logrus.Warning("Invalid JWT_TIMEOUT_HOURS, using default: 24 hours")
-			} else {
-				jwtTimeout = time.Duration(timeoutHours) * time.Hour
-			}
-		}
+		loadJWTConfig()
 	})
+}
+
+// loadJWTConfig loads JWT configuration from environment variables
+// This is separated from initializeJWT to allow testing
+func loadJWTConfig() {
+	// Load environment variables
+	err := godotenv.Load()
+	if err != nil {
+		logrus.Warning("Error loading .env file, using default values")
+	}
+
+	// Get JWT secret key
+	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
+	if jwtSecretKey == "" {
+		// Don't fail immediately - allow lazy initialization when key is set
+		mu.Lock()
+		isInitialized = false
+		mu.Unlock()
+		return
+	}
+
+	mu.Lock()
+	defer mu.Unlock()
+
+	jwtKey = []byte(jwtSecretKey)
+	isInitialized = true
+
+	// Get JWT issuer (optional)
+	jwtIssuer = os.Getenv("JWT_ISSUER")
+	if jwtIssuer == "" {
+		jwtIssuer = "vet-go-api"
+		logrus.Info("JWT_ISSUER not set, using default: ", jwtIssuer)
+	}
+
+	// Get JWT timeout (optional)
+	jwtTimeoutStr := os.Getenv("JWT_TIMEOUT_HOURS")
+	if jwtTimeoutStr == "" {
+		jwtTimeout = 24 * time.Hour // Default to 24 hours
+		logrus.Info("JWT_TIMEOUT_HOURS not set, using default: 24 hours")
+	} else {
+		var timeoutHours int
+		_, err := fmt.Sscanf(jwtTimeoutStr, "%d", &timeoutHours)
+		if err != nil {
+			jwtTimeout = 24 * time.Hour
+			logrus.Warning("Invalid JWT_TIMEOUT_HOURS, using default: 24 hours")
+		} else {
+			jwtTimeout = time.Duration(timeoutHours) * time.Hour
+		}
+	}
 }
 
 // GenerateToken creates a new JWT token for a user
@@ -84,28 +95,27 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 	initializeJWT()
 
 	mu.RLock()
+	initialized := isInitialized
+	mu.RUnlock()
+
+	// If not initialized, try to load config again (useful for tests)
+	if !initialized {
+		mu.Lock()
+		if !isInitialized {
+			loadJWTConfig()
+		}
+		mu.Unlock()
+	}
+
+	mu.RLock()
 	keyLen := len(jwtKey)
 	issuer := jwtIssuer
 	timeout := jwtTimeout
 	mu.RUnlock()
 
-	// If key is not initialized, try one more time (for test scenarios)
-	// This handles the case where env vars are set after package init
+	// Fail if JWT key is not initialized
 	if keyLen == 0 {
-		// Reset once to allow re-initialization
-		once = sync.Once{}
-		initializeJWT()
-		
-		mu.RLock()
-		keyLen = len(jwtKey)
-		issuer = jwtIssuer
-		timeout = jwtTimeout
-		mu.RUnlock()
-		
-		// Fail if still not initialized
-		if keyLen == 0 {
-			return "", errors.New("JWT_SECRET_KEY must be set in environment")
-		}
+		return "", errors.New("JWT_SECRET_KEY must be set in environment")
 	}
 
 	expirationTime := time.Now().Add(timeout)
@@ -160,10 +170,8 @@ func ValidateToken(tokenString string) (*Claims, error) {
 		return nil, errors.New("invalid token")
 	}
 
-	// Check expiration
-	if time.Unix(claims.ExpiresAt, 0).Before(time.Now()) {
-		return nil, errors.New("token expired")
-	}
+	// Note: Expiration is already validated by jwt.ParseWithClaims
+	// The library automatically checks ExpiresAt and returns an error if expired
 
 	return claims, nil
 }
