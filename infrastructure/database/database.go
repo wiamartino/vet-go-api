@@ -50,6 +50,10 @@ func models() []interface{} {
 		&domain.Treatment{},
 		&domain.Invoice{},
 		&domain.Medication{},
+		&domain.MedicalRecord{},
+		&domain.Vaccination{},
+		&domain.Surgery{},
+		&domain.Allergy{},
 	}
 }
 

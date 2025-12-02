@@ -45,6 +45,10 @@ func SetupRouter(db *database.DB) *gin.Engine {
 		setupTreatmentRoutes(authorized, db)
 		setupInvoiceRoutes(authorized, db)
 		setupMedicationRoutes(authorized, db)
+		setupMedicalRecordRoutes(authorized, db)
+		setupVaccinationRoutes(authorized, db)
+		setupSurgeryRoutes(authorized, db)
+		setupAllergyRoutes(authorized, db)
 	}
 
 	return r
@@ -166,4 +170,88 @@ func setupMedicationRoutes(r *gin.RouterGroup, db *database.DB) {
 		medications.PUT("/:id", medicationController.UpdateMedication)
 		medications.DELETE("/:id", medicationController.DeleteMedication)
 	}
+}
+
+func setupMedicalRecordRoutes(r *gin.RouterGroup, db *database.DB) {
+	medicalRecordRepo := repositories.NewMedicalRecordRepository(db)
+	medicalRecordService := application.NewMedicalRecordService(medicalRecordRepo)
+	medicalRecordController := controllers.NewMedicalRecordController(medicalRecordService)
+
+	medicalRecords := r.Group("/medical-records")
+	{
+		medicalRecords.GET("", medicalRecordController.GetMedicalRecords)
+		medicalRecords.GET("/:id", medicalRecordController.GetMedicalRecord)
+		medicalRecords.POST("", medicalRecordController.CreateMedicalRecord)
+		medicalRecords.PUT("/:id", medicalRecordController.UpdateMedicalRecord)
+		medicalRecords.DELETE("/:id", medicalRecordController.DeleteMedicalRecord)
+	}
+
+	// Pet-specific medical records
+	r.GET("/pets/:pet_id/medical-records", medicalRecordController.GetMedicalRecordsByPet)
+}
+
+func setupVaccinationRoutes(r *gin.RouterGroup, db *database.DB) {
+	vaccinationRepo := repositories.NewVaccinationRepository(db)
+	vaccinationService := application.NewVaccinationService(vaccinationRepo)
+	vaccinationController := controllers.NewVaccinationController(vaccinationService)
+
+	vaccinations := r.Group("/vaccinations")
+	{
+		vaccinations.GET("", vaccinationController.GetVaccinations)
+		vaccinations.GET("/:id", vaccinationController.GetVaccination)
+		vaccinations.GET("/due", vaccinationController.GetDueVaccinations)
+		vaccinations.GET("/overdue", vaccinationController.GetOverdueVaccinations)
+		vaccinations.POST("", vaccinationController.CreateVaccination)
+		vaccinations.PUT("/:id", vaccinationController.UpdateVaccination)
+		vaccinations.PATCH("/:id/complete", vaccinationController.CompleteVaccination)
+		vaccinations.DELETE("/:id", vaccinationController.DeleteVaccination)
+	}
+
+	// Pet-specific vaccinations
+	r.GET("/pets/:pet_id/vaccinations", vaccinationController.GetVaccinationsByPet)
+}
+
+func setupSurgeryRoutes(r *gin.RouterGroup, db *database.DB) {
+	surgeryRepo := repositories.NewSurgeryRepository(db)
+	surgeryService := application.NewSurgeryService(surgeryRepo)
+	surgeryController := controllers.NewSurgeryController(surgeryService)
+
+	surgeries := r.Group("/surgeries")
+	{
+		surgeries.GET("", surgeryController.GetSurgeries)
+		surgeries.GET("/:id", surgeryController.GetSurgery)
+		surgeries.GET("/status", surgeryController.GetSurgeriesByStatus)
+		surgeries.GET("/scheduled", surgeryController.GetScheduledSurgeries)
+		surgeries.POST("", surgeryController.CreateSurgery)
+		surgeries.PUT("/:id", surgeryController.UpdateSurgery)
+		surgeries.PATCH("/:id/start", surgeryController.StartSurgery)
+		surgeries.PATCH("/:id/complete", surgeryController.CompleteSurgery)
+		surgeries.PATCH("/:id/cancel", surgeryController.CancelSurgery)
+		surgeries.DELETE("/:id", surgeryController.DeleteSurgery)
+	}
+
+	// Pet-specific surgeries
+	r.GET("/pets/:pet_id/surgeries", surgeryController.GetSurgeriesByPet)
+}
+
+func setupAllergyRoutes(r *gin.RouterGroup, db *database.DB) {
+	allergyRepo := repositories.NewAllergyRepository(db)
+	allergyService := application.NewAllergyService(allergyRepo)
+	allergyController := controllers.NewAllergyController(allergyService)
+
+	allergies := r.Group("/allergies")
+	{
+		allergies.GET("", allergyController.GetAllergies)
+		allergies.GET("/:id", allergyController.GetAllergy)
+		allergies.GET("/severity", allergyController.GetAllergiesBySeverity)
+		allergies.POST("", allergyController.CreateAllergy)
+		allergies.PUT("/:id", allergyController.UpdateAllergy)
+		allergies.PATCH("/:id/deactivate", allergyController.DeactivateAllergy)
+		allergies.PATCH("/:id/reactivate", allergyController.ReactivateAllergy)
+		allergies.DELETE("/:id", allergyController.DeleteAllergy)
+	}
+
+	// Pet-specific allergies
+	r.GET("/pets/:pet_id/allergies", allergyController.GetAllergiesByPet)
+	r.GET("/pets/:pet_id/allergies/active", allergyController.GetActiveAllergiesByPet)
 }
