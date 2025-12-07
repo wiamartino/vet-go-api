@@ -34,8 +34,8 @@ type Allergy struct {
 	IsActive      bool            `json:"is_active" gorm:"default:true"`
 	CreatedAt     time.Time       `json:"created_at"`
 	UpdatedAt     time.Time       `json:"updated_at"`
-	Pet           Pet             `gorm:"foreignKey:PetID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"pet,omitempty"`
-	Veterinarian  Veterinarian    `gorm:"foreignKey:DiagnosedBy;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"veterinarian,omitempty"`
+	Pet           Pet             `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"pet,omitempty"`
+	Veterinarian  Veterinarian    `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"veterinarian,omitempty"`
 }
 
 type AllergyRepository interface {
