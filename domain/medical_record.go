@@ -19,9 +19,10 @@ type MedicalRecord struct {
 	HeartRate       *int      `json:"heart_rate,omitempty"`  // beats per minute
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
-
-	// Relations - Removed embedded structs to prevent inverted FK constraints
-	// Use Preload("Pet"), Preload("Veterinarian"), Preload("Appointment") when querying
+	// Relations
+	Pet          Pet          `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"pet,omitempty"`
+	Veterinarian Veterinarian `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"veterinarian,omitempty"`
+	Appointment  *Appointment `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"appointment,omitempty"`
 }
 
 type MedicalRecordRepository interface {
