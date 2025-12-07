@@ -28,8 +28,8 @@ type Vaccination struct {
 	SideEffects      string            `json:"side_effects,omitempty"`
 	CreatedAt        time.Time         `json:"created_at"`
 	UpdatedAt        time.Time         `json:"updated_at"`
-	Pet              Pet               `gorm:"foreignKey:PetID" json:"pet,omitempty"`
-	Veterinarian     *Veterinarian     `gorm:"foreignKey:VeterinarianID" json:"veterinarian,omitempty"`
+	// Relations - Removed embedded structs to prevent inverted FK constraints
+	// Use Preload("Pet"), Preload("Veterinarian") when querying
 }
 
 type VaccinationRepository interface {

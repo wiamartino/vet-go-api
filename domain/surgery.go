@@ -38,8 +38,8 @@ type Surgery struct {
 	Cost             *float64      `json:"cost,omitempty"`
 	CreatedAt        time.Time     `json:"created_at"`
 	UpdatedAt        time.Time     `json:"updated_at"`
-	Pet              Pet           `gorm:"foreignKey:PetID" json:"pet,omitempty"`
-	Veterinarian     Veterinarian  `gorm:"foreignKey:VeterinarianID" json:"veterinarian,omitempty"`
+	// Relations - Removed embedded structs to prevent inverted FK constraints
+	// Use Preload("Pet"), Preload("Veterinarian") when querying
 }
 
 type SurgeryRepository interface {

@@ -20,10 +20,8 @@ type MedicalRecord struct {
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
 
-	// Relations
-	Pet          Pet          `gorm:"foreignKey:PetID" json:"pet,omitempty"`
-	Veterinarian Veterinarian `gorm:"foreignKey:VeterinarianID" json:"veterinarian,omitempty"`
-	Appointment  *Appointment `gorm:"foreignKey:AppointmentID" json:"appointment,omitempty"`
+	// Relations - Removed embedded structs to prevent inverted FK constraints
+	// Use Preload("Pet"), Preload("Veterinarian"), Preload("Appointment") when querying
 }
 
 type MedicalRecordRepository interface {
