@@ -43,17 +43,17 @@ func models() []interface{} {
 	return []interface{}{
 		&AuditLog{},
 		&domain.User{},
-		&domain.Pet{},
 		&domain.Client{},
-		&domain.Appointment{},
 		&domain.Veterinarian{},
+		&domain.Pet{},
+		&domain.Allergy{},
+		&domain.Appointment{},
 		&domain.Treatment{},
-		&domain.Invoice{},
 		&domain.Medication{},
+		&domain.Invoice{},
 		&domain.MedicalRecord{},
 		&domain.Vaccination{},
 		&domain.Surgery{},
-		&domain.Allergy{},
 	}
 }
 
@@ -116,12 +116,31 @@ func DropAllTablesAndSeed() error {
 		}
 	}
 
-	// Drop all tables
-	if err := dbInstance.Migrator().DropTable(models()...); err != nil {
-		return fmt.Errorf("failed to drop tables: %w", err)
+	// Drop tables in reverse order (child tables first, then parent tables)
+	// Drop each table individually to ensure proper foreign key constraint handling
+	tablesToDrop := []interface{}{
+		&domain.Surgery{},       // references Pet, Veterinarian
+		&domain.Vaccination{},   // references Pet, Veterinarian
+		&domain.MedicalRecord{}, // references Pet, Veterinarian, Appointment
+		&domain.Invoice{},       // references Client, Appointment
+		&domain.Medication{},    // independent
+		&domain.Treatment{},     // independent
+		&domain.Appointment{},   // references Pet, Veterinarian
+		&domain.Allergy{},       // references Pet, Veterinarian
+		&domain.Pet{},           // references Client
+		&domain.Veterinarian{},  // independent
+		&domain.Client{},        // independent
+		&domain.User{},          // independent
+		&AuditLog{},             // independent
 	}
 
-	// Recreate tables
+	for _, table := range tablesToDrop {
+		if err := dbInstance.Migrator().DropTable(table); err != nil {
+			log.Printf("Warning: failed to drop table %T: %v", table, err)
+		}
+	}
+
+	// Recreate tables in correct order
 	if err := dbInstance.AutoMigrate(models()...); err != nil {
 		return fmt.Errorf("failed to recreate tables: %w", err)
 	}
@@ -132,8 +151,21 @@ func DropAllTablesAndSeed() error {
 		return fmt.Errorf("failed to read seed file: %w", err)
 	}
 
+	// Disable foreign key checks temporarily for seeding
+	if err := dbInstance.Exec("SET session_replication_role = 'replica';").Error; err != nil {
+		return fmt.Errorf("failed to disable foreign key checks: %w", err)
+	}
+
+	// Execute seed file
 	if err := dbInstance.Exec(string(seedFile)).Error; err != nil {
+		// Re-enable foreign key checks before returning error
+		dbInstance.Exec("SET session_replication_role = 'origin';")
 		return fmt.Errorf("failed to execute seed file: %w", err)
+	}
+
+	// Re-enable foreign key checks
+	if err := dbInstance.Exec("SET session_replication_role = 'origin';").Error; err != nil {
+		return fmt.Errorf("failed to re-enable foreign key checks: %w", err)
 	}
 
 	return nil

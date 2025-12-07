@@ -44,7 +44,7 @@ func (c *VaccinationController) GetVaccination(ctx *gin.Context) {
 }
 
 func (c *VaccinationController) GetVaccinationsByPet(ctx *gin.Context) {
-	petID, err := strconv.ParseUint(ctx.Param("pet_id"), 10, 32)
+	petID, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
 		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
 		return

@@ -24,6 +24,21 @@ INSERT INTO clients (first_name, last_name, address, phone, email) VALUES
 ('Grace', 'Taylor', '987 Redwood Rd', '012-345-6789', 'grace.taylor@example.com'),
 ('Henry', 'Anderson', '654 Walnut Dr', '987-654-3210', 'henry.anderson@example.com');
 
+-- Insert Veterinarians
+INSERT INTO veterinarians (first_name, last_name, specialty, phone, email) VALUES
+('Dr. Emily', 'Brown', 'Surgery', '111-222-3333', 'emily.brown@example.com'),
+('Dr. Michael', 'Green', 'Dentistry', '444-555-6666', 'michael.green@example.com'),
+('Dr. Sarah', 'White', 'Dermatology', '777-888-9999', 'sarah.white@example.com'),
+('Dr. John', 'Black', 'Cardiology', '999-000-1111', 'john.black@example.com'),
+('Dr. Lisa', 'Blue', 'Neurology', '222-444-6666', 'lisa.blue@example.com'),
+('Dr. Thomas', 'Gray', 'Orthopedics', '333-444-5555', 'thomas.gray@example.com'),
+('Dr. Jessica', 'Gold', 'Ophthalmology', '666-777-8888', 'jessica.gold@example.com'),
+('Dr. William', 'Silver', 'Internal Medicine', '111-333-5555', 'william.silver@example.com'),
+('Dr. Olivia', 'Rose', 'Oncology', '222-555-8888', 'olivia.rose@example.com'),
+('Dr. James', 'Stone', 'Emergency Medicine', '444-666-9999', 'james.stone@example.com');
+
+
+
 -- Insert Pets
 INSERT INTO pets (name, species, breed, date_of_birth, client_id) VALUES
 ('Buddy', 'Dog', 'Golden Retriever', '2020-01-01', 1),
@@ -42,18 +57,20 @@ INSERT INTO pets (name, species, breed, date_of_birth, client_id) VALUES
 ('Simba', 'Cat', 'Sphynx', '2021-10-31', 4),
 ('Lily', 'Dog', 'Dachshund', '2019-12-03', 5);
 
--- Insert Veterinarians
-INSERT INTO veterinarians (first_name, last_name, specialty, phone, email) VALUES
-('Dr. Emily', 'Brown', 'Surgery', '111-222-3333', 'emily.brown@example.com'),
-('Dr. Michael', 'Green', 'Dentistry', '444-555-6666', 'michael.green@example.com'),
-('Dr. Sarah', 'White', 'Dermatology', '777-888-9999', 'sarah.white@example.com'),
-('Dr. John', 'Black', 'Cardiology', '999-000-1111', 'john.black@example.com'),
-('Dr. Lisa', 'Blue', 'Neurology', '222-444-6666', 'lisa.blue@example.com'),
-('Dr. Thomas', 'Gray', 'Orthopedics', '333-444-5555', 'thomas.gray@example.com'),
-('Dr. Jessica', 'Gold', 'Ophthalmology', '666-777-8888', 'jessica.gold@example.com'),
-('Dr. William', 'Silver', 'Internal Medicine', '111-333-5555', 'william.silver@example.com'),
-('Dr. Olivia', 'Rose', 'Oncology', '222-555-8888', 'olivia.rose@example.com'),
-('Dr. James', 'Stone', 'Emergency Medicine', '444-666-9999', 'james.stone@example.com');
+-- Insert Allergies
+INSERT INTO allergies (pet_id, allergen, allergy_type, severity, reaction, diagnosed_date, diagnosed_by, notes, is_active, created_at, updated_at) VALUES
+(1, 'Chicken', 'food', 'moderate', 'Skin rashes, itching', '2023-05-10', 1, 'Avoid all chicken-based foods and treats', TRUE, NOW(), NOW()),
+(2, 'Penicillin', 'medication', 'severe', 'Anaphylaxis', '2023-03-15', 2, 'NEVER administer penicillin or related antibiotics. Use alternatives.', TRUE, NOW(), NOW()),
+(3, 'Pollen (grass)', 'environment', 'mild', 'Sneezing, watery eyes', '2023-04-20', 3, 'Seasonal allergies worse in spring. Antihistamines as needed.', TRUE, NOW(), NOW()),
+(4, 'Bee stings', 'insect', 'severe', 'Swelling, difficulty breathing', '2023-06-01', 4, 'Keep EpiPen available. Previous anaphylactic reaction.', TRUE, NOW(), NOW()),
+(5, 'Dairy products', 'food', 'mild', 'Gastrointestinal upset, diarrhea', '2023-07-12', 1, 'Avoid milk, cheese, and dairy-based treats', TRUE, NOW(), NOW()),
+(6, 'Flea bites', 'insect', 'moderate', 'Severe itching, hair loss, hot spots', '2023-08-05', 2, 'Flea allergy dermatitis. Strict flea control essential.', TRUE, NOW(), NOW()),
+(7, 'Beef', 'food', 'moderate', 'Chronic ear infections, skin inflammation', '2023-02-28', 3, 'Switched to fish-based diet with improvement', TRUE, NOW(), NOW()),
+(8, 'Dust mites', 'environment', 'mild', 'Mild skin irritation', '2023-09-10', 4, 'Keep environment clean, wash bedding frequently', TRUE, NOW(), NOW()),
+(9, 'Sulfonamides', 'medication', 'severe', 'Vomiting, seizures', '2023-01-20', 1, 'Life-threatening reaction. Avoid all sulfa drugs.', TRUE, NOW(), NOW()),
+(10, 'Corn', 'food', 'mild', 'Mild itching', '2023-05-30', 2, 'Use corn-free diet. Symptoms resolved.', TRUE, NOW(), NOW()),
+(3, 'Peanut butter', 'food', 'moderate', 'Facial swelling, hives', '2023-10-12', 3, 'Developed allergy recently. No peanut products.', TRUE, NOW(), NOW()),
+(7, 'Mold spores', 'environment', 'mild', 'Respiratory irritation', '2023-09-15', 3, 'Keep environment dry, use dehumidifier', TRUE, NOW(), NOW());
 
 -- Insert Appointments
 INSERT INTO appointments (date, time, pet_id, veterinarian_id, reason_for_appointment) VALUES
@@ -168,17 +185,3 @@ INSERT INTO surgeries (pet_id, veterinarian_id, surgery_name, surgery_type, stat
 (9, 1, 'Pyometra surgery', 'emergency', 'completed', '2023-08-20 16:00:00', '2023-08-20 16:30:00', 90, 'Emergency uterine infection. Critical condition.', 'Emergency spay performed. IV antibiotics started.', 'Mild post-op infection treated', 'Isoflurane', TRUE, '2023-08-27', 1200.00, NOW(), NOW()),
 (10, 2, 'Neuter (castration)', 'routine', 'completed', '2023-06-01 09:00:00', '2023-06-01 09:00:00', 30, 'Routine neuter procedure.', 'Surgery successful. Minimal bleeding. E-collar placed.', 'None', 'Sevoflurane', TRUE, '2023-06-08', 250.00, NOW(), NOW());
 
--- Insert Allergies
-INSERT INTO allergies (pet_id, allergen, allergy_type, severity, reaction, diagnosed_date, diagnosed_by, notes, is_active, created_at, updated_at) VALUES
-(1, 'Chicken', 'food', 'moderate', 'Skin rashes, itching', '2023-05-10', 1, 'Avoid all chicken-based foods and treats', TRUE, NOW(), NOW()),
-(2, 'Penicillin', 'medication', 'severe', 'Anaphylaxis', '2023-03-15', 2, 'NEVER administer penicillin or related antibiotics. Use alternatives.', TRUE, NOW(), NOW()),
-(3, 'Pollen (grass)', 'environment', 'mild', 'Sneezing, watery eyes', '2023-04-20', 3, 'Seasonal allergies worse in spring. Antihistamines as needed.', TRUE, NOW(), NOW()),
-(4, 'Bee stings', 'insect', 'severe', 'Swelling, difficulty breathing', '2023-06-01', 4, 'Keep EpiPen available. Previous anaphylactic reaction.', TRUE, NOW(), NOW()),
-(5, 'Dairy products', 'food', 'mild', 'Gastrointestinal upset, diarrhea', '2023-07-12', 1, 'Avoid milk, cheese, and dairy-based treats', TRUE, NOW(), NOW()),
-(6, 'Flea bites', 'insect', 'moderate', 'Severe itching, hair loss, hot spots', '2023-08-05', 2, 'Flea allergy dermatitis. Strict flea control essential.', TRUE, NOW(), NOW()),
-(7, 'Beef', 'food', 'moderate', 'Chronic ear infections, skin inflammation', '2023-02-28', 3, 'Switched to fish-based diet with improvement', TRUE, NOW(), NOW()),
-(8, 'Dust mites', 'environment', 'mild', 'Mild skin irritation', '2023-09-10', 4, 'Keep environment clean, wash bedding frequently', TRUE, NOW(), NOW()),
-(9, 'Sulfonamides', 'medication', 'severe', 'Vomiting, seizures', '2023-01-20', 1, 'Life-threatening reaction. Avoid all sulfa drugs.', TRUE, NOW(), NOW()),
-(10, 'Corn', 'food', 'mild', 'Mild itching', '2023-05-30', 2, 'Use corn-free diet. Symptoms resolved.', TRUE, NOW(), NOW()),
-(3, 'Peanut butter', 'food', 'moderate', 'Facial swelling, hives', '2023-10-12', 3, 'Developed allergy recently. No peanut products.', TRUE, NOW(), NOW()),
-(7, 'Mold spores', 'environment', 'mild', 'Respiratory irritation', '2023-09-15', 3, 'Keep environment dry, use dehumidifier', TRUE, NOW(), NOW());

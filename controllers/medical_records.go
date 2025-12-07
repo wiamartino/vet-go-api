@@ -66,11 +66,11 @@ func (c *MedicalRecordController) GetMedicalRecord(ctx *gin.Context) {
 // @Tags medical-records
 // @Accept json
 // @Produce json
-// @Param pet_id path int true "Pet ID"
+// @Param id path int true "Pet ID"
 // @Success 200 {array} domain.MedicalRecord
-// @Router /api/v1/pets/{pet_id}/medical-records [get]
+// @Router /api/v1/pets/{id}/medical-records [get]
 func (c *MedicalRecordController) GetMedicalRecordsByPet(ctx *gin.Context) {
-	petID, err := strconv.ParseUint(ctx.Param("pet_id"), 10, 32)
+	petID, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
 		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
 		return

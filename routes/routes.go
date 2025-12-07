@@ -102,6 +102,26 @@ func setupPetRoutes(r *gin.RouterGroup, db *database.DB) {
 	petService := application.NewPetService(petRepo)
 	petController := controllers.NewPetController(petService)
 
+	// Medical records for pets
+	medicalRecordRepo := repositories.NewMedicalRecordRepository(db)
+	medicalRecordService := application.NewMedicalRecordService(medicalRecordRepo)
+	medicalRecordController := controllers.NewMedicalRecordController(medicalRecordService)
+
+	// Vaccinations for pets
+	vaccinationRepo := repositories.NewVaccinationRepository(db)
+	vaccinationService := application.NewVaccinationService(vaccinationRepo)
+	vaccinationController := controllers.NewVaccinationController(vaccinationService)
+
+	// Surgeries for pets
+	surgeryRepo := repositories.NewSurgeryRepository(db)
+	surgeryService := application.NewSurgeryService(surgeryRepo)
+	surgeryController := controllers.NewSurgeryController(surgeryService)
+
+	// Allergies for pets
+	allergyRepo := repositories.NewAllergyRepository(db)
+	allergyService := application.NewAllergyService(allergyRepo)
+	allergyController := controllers.NewAllergyController(allergyService)
+
 	pets := r.Group("/pets")
 	{
 		pets.GET("", petController.FindPets)
@@ -109,6 +129,13 @@ func setupPetRoutes(r *gin.RouterGroup, db *database.DB) {
 		pets.POST("", petController.CreatePet)
 		pets.PUT("/:id", petController.UpdatePet)
 		pets.DELETE("/:id", petController.DeletePet)
+
+		// Nested resources - using :id for consistency
+		pets.GET("/:id/medical-records", medicalRecordController.GetMedicalRecordsByPet)
+		pets.GET("/:id/vaccinations", vaccinationController.GetVaccinationsByPet)
+		pets.GET("/:id/surgeries", surgeryController.GetSurgeriesByPet)
+		pets.GET("/:id/allergies", allergyController.GetAllergiesByPet)
+		pets.GET("/:id/allergies/active", allergyController.GetActiveAllergiesByPet)
 	}
 }
 
@@ -185,9 +212,6 @@ func setupMedicalRecordRoutes(r *gin.RouterGroup, db *database.DB) {
 		medicalRecords.PUT("/:id", medicalRecordController.UpdateMedicalRecord)
 		medicalRecords.DELETE("/:id", medicalRecordController.DeleteMedicalRecord)
 	}
-
-	// Pet-specific medical records
-	r.GET("/pets/:pet_id/medical-records", medicalRecordController.GetMedicalRecordsByPet)
 }
 
 func setupVaccinationRoutes(r *gin.RouterGroup, db *database.DB) {
@@ -206,9 +230,6 @@ func setupVaccinationRoutes(r *gin.RouterGroup, db *database.DB) {
 		vaccinations.PATCH("/:id/complete", vaccinationController.CompleteVaccination)
 		vaccinations.DELETE("/:id", vaccinationController.DeleteVaccination)
 	}
-
-	// Pet-specific vaccinations
-	r.GET("/pets/:pet_id/vaccinations", vaccinationController.GetVaccinationsByPet)
 }
 
 func setupSurgeryRoutes(r *gin.RouterGroup, db *database.DB) {
@@ -229,9 +250,6 @@ func setupSurgeryRoutes(r *gin.RouterGroup, db *database.DB) {
 		surgeries.PATCH("/:id/cancel", surgeryController.CancelSurgery)
 		surgeries.DELETE("/:id", surgeryController.DeleteSurgery)
 	}
-
-	// Pet-specific surgeries
-	r.GET("/pets/:pet_id/surgeries", surgeryController.GetSurgeriesByPet)
 }
 
 func setupAllergyRoutes(r *gin.RouterGroup, db *database.DB) {
@@ -250,8 +268,4 @@ func setupAllergyRoutes(r *gin.RouterGroup, db *database.DB) {
 		allergies.PATCH("/:id/reactivate", allergyController.ReactivateAllergy)
 		allergies.DELETE("/:id", allergyController.DeleteAllergy)
 	}
-
-	// Pet-specific allergies
-	r.GET("/pets/:pet_id/allergies", allergyController.GetAllergiesByPet)
-	r.GET("/pets/:pet_id/allergies/active", allergyController.GetActiveAllergiesByPet)
 }

@@ -44,7 +44,7 @@ func (c *AllergyController) GetAllergy(ctx *gin.Context) {
 }
 
 func (c *AllergyController) GetAllergiesByPet(ctx *gin.Context) {
-	petID, err := strconv.ParseUint(ctx.Param("pet_id"), 10, 32)
+	petID, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
 		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
 		return
@@ -60,7 +60,7 @@ func (c *AllergyController) GetAllergiesByPet(ctx *gin.Context) {
 }
 
 func (c *AllergyController) GetActiveAllergiesByPet(ctx *gin.Context) {
-	petID, err := strconv.ParseUint(ctx.Param("pet_id"), 10, 32)
+	petID, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
 		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
 		return
