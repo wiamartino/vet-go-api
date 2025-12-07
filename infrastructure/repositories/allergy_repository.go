@@ -15,31 +15,31 @@ func NewAllergyRepository(db *database.DB) domain.AllergyRepository {
 
 func (r *allergyRepository) FindAll() ([]domain.Allergy, error) {
 	var allergies []domain.Allergy
-	err := r.db.Preload("Pet").Preload("Veterinarian").Find(&allergies).Error
+	err := r.db.Find(&allergies).Error
 	return allergies, err
 }
 
 func (r *allergyRepository) FindByID(id uint) (domain.Allergy, error) {
 	var allergy domain.Allergy
-	err := r.db.Preload("Pet").Preload("Veterinarian").First(&allergy, id).Error
+	err := r.db.First(&allergy, id).Error
 	return allergy, err
 }
 
 func (r *allergyRepository) FindByPetID(petID uint) ([]domain.Allergy, error) {
 	var allergies []domain.Allergy
-	err := r.db.Where("pet_id = ?", petID).Preload("Veterinarian").Order("diagnosed_date DESC").Find(&allergies).Error
+	err := r.db.Where("pet_id = ?", petID).Order("diagnosed_date DESC").Find(&allergies).Error
 	return allergies, err
 }
 
 func (r *allergyRepository) FindActiveByPetID(petID uint) ([]domain.Allergy, error) {
 	var allergies []domain.Allergy
-	err := r.db.Where("pet_id = ? AND is_active = ?", petID, true).Preload("Veterinarian").Order("severity DESC, diagnosed_date DESC").Find(&allergies).Error
+	err := r.db.Where("pet_id = ? AND is_active = ?", petID, true).Order("severity DESC, diagnosed_date DESC").Find(&allergies).Error
 	return allergies, err
 }
 
 func (r *allergyRepository) FindBySeverity(severity domain.AllergySeverity) ([]domain.Allergy, error) {
 	var allergies []domain.Allergy
-	err := r.db.Where("severity = ? AND is_active = ?", severity, true).Preload("Pet").Preload("Veterinarian").Order("diagnosed_date DESC").Find(&allergies).Error
+	err := r.db.Where("severity = ? AND is_active = ?", severity, true).Order("diagnosed_date DESC").Find(&allergies).Error
 	return allergies, err
 }
 
