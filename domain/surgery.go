@@ -38,8 +38,9 @@ type Surgery struct {
 	Cost             *float64      `json:"cost,omitempty"`
 	CreatedAt        time.Time     `json:"created_at"`
 	UpdatedAt        time.Time     `json:"updated_at"`
-	// Relations - Removed embedded structs to prevent inverted FK constraints
-	// Use Preload("Pet"), Preload("Veterinarian") when querying
+	// Relations
+	Pet          *Pet          `json:"pet,omitempty"`
+	Veterinarian *Veterinarian `json:"veterinarian,omitempty"`
 }
 
 type SurgeryRepository interface {

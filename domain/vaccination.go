@@ -30,8 +30,6 @@ type Vaccination struct {
 	UpdatedAt        time.Time         `json:"updated_at"`
 	Pet              *Pet              `json:"pet,omitempty"`
 	Veterinarian     *Veterinarian     `json:"veterinarian,omitempty"`
-	// Relations - Removed embedded structs to prevent inverted FK constraints
-	// Use Preload("Pet"), Preload("Veterinarian") when querying
 }
 
 type VaccinationRepository interface {
