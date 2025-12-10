@@ -23,7 +23,7 @@ func (r *ClientRepository) FindAll() ([]domain.Client, error) {
 
 func (r *ClientRepository) FindByID(id uint) (domain.Client, error) {
 	var client domain.Client
-	if err := r.db.First(&client, id).Error; err != nil {
+	if err := r.db.Preload("Pets").First(&client, id).Error; err != nil {
 		return domain.Client{}, err
 	}
 	return client, nil
