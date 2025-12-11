@@ -76,7 +76,7 @@ func TestClientController(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "error", response["status"])
 		// Controller wraps generic errors; don't assert raw error content
-		assert.NotEmpty(t, response["error"]) 
+		assert.NotEmpty(t, response["error"])
 
 		mockRepo.AssertExpectations(t)
 	})
