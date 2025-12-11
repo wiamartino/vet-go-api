@@ -2,11 +2,11 @@ package domain
 
 type Client struct {
 	ClientID  uint   `gorm:"primaryKey" json:"client_id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Address   string `json:"address"`
-	Phone     string `json:"phone"`
-	Email     string `json:"email"`
+	FirstName string `json:"first_name" binding:"required,min=2,max=100"`
+	LastName  string `json:"last_name" binding:"required,min=2,max=100"`
+	Address   string `json:"address" binding:"required,min=5,max=255"`
+	Phone     string `json:"phone" binding:"required,min=10,max=20"`
+	Email     string `json:"email" binding:"required,email"`
 	Pets      []Pet  `gorm:"foreignKey:ClientID" json:"pets"`
 }
 

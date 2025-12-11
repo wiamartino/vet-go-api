@@ -23,23 +23,38 @@ func NewAuthController(service *application.UserService) *AuthController {
 func (ctrl *AuthController) Register(c *gin.Context) {
 	var user domain.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		utils.RespondWithError(c, http.StatusBadRequest, "Invalid input data")
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid request format: "+err.Error())
+		return
+	}
+
+	// Validate user data
+	validator := utils.NewValidator()
+	validator.ValidateLengthRange("name", user.Name, 2, 100)
+	validator.ValidateEmail("email", user.Email)
+	validator.ValidateMinLength("password", user.Password, 8)
+
+	if !validator.IsValid() {
+		utils.RespondWithValidationError(c, validator.Errors)
 		return
 	}
 
 	// Validate if the email is already registered
 	if _, err := ctrl.service.FindByEmail(user.Email); err == nil {
-		utils.RespondWithError(c, http.StatusConflict, "Email is already registered")
+		utils.RespondWithAppError(c, utils.NewConflictError("Email is already registered"))
 		return
 	}
 
 	if err := ctrl.service.Register(user); err != nil {
 		logrus.WithError(err).Error("Failed to register user")
-		utils.RespondWithError(c, http.StatusBadRequest, err.Error())
+		if utils.IsAppError(err) {
+			utils.RespondWithAppError(c, err.(*utils.AppError))
+		} else {
+			utils.RespondWithAppError(c, utils.NewBadRequestError(err.Error()))
+		}
 		return
 	}
 
-	utils.RespondWithSuccess(c, http.StatusCreated, gin.H{
+	utils.RespondWithCreated(c, gin.H{
 		"message": "User registered successfully",
 	})
 }
@@ -52,13 +67,13 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&credentials); err != nil {
-		utils.RespondWithError(c, http.StatusBadRequest, "Invalid credentials format")
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid request format: "+err.Error())
 		return
 	}
 
 	user, err := ctrl.service.Login(credentials.Email, credentials.Password)
 	if err != nil {
-		utils.RespondWithError(c, http.StatusUnauthorized, "Invalid email or password")
+		utils.RespondWithAppError(c, utils.NewUnauthorizedError("Invalid email or password"))
 		return
 	}
 
@@ -66,7 +81,7 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 	token, err := jwtUtils.GenerateToken(user.ID, user.Email, user.Role)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to generate token")
-		utils.RespondWithError(c, http.StatusInternalServerError, "Authentication failed")
+		utils.RespondWithAppError(c, utils.NewInternalError("Authentication failed"))
 		return
 	}
 
