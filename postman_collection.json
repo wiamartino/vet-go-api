@@ -5,13 +5,18 @@
   },
   "item": [
     {
-      "name": "User",
+      "name": "Auth",
       "item": [
         {
           "name": "Register",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password\"\n}",
@@ -22,11 +27,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/register",
+              "raw": "http://localhost:8080/auth/register",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["register"]
+              "path": ["auth", "register"]
             }
           },
           "response": []
@@ -35,7 +40,12 @@
           "name": "Login",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password\"\n}",
@@ -46,11 +56,35 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/login",
+              "raw": "http://localhost:8080/auth/login",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["login"]
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/auth/refresh",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["auth", "refresh"]
             }
           },
           "response": []
@@ -64,13 +98,18 @@
           "name": "Get Appointments",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/appointments",
+              "raw": "http://localhost:8080/api/v1/appointments",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["appointments"]
+              "path": ["api", "v1", "appointments"]
             }
           },
           "response": []
@@ -79,13 +118,18 @@
           "name": "Get Appointment",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/appointments/:id",
+              "raw": "http://localhost:8080/api/v1/appointments/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["appointments", ":id"]
+              "path": ["api", "v1", "appointments", ":id"]
             }
           },
           "response": []
@@ -94,7 +138,16 @@
           "name": "Create Appointment",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"date\": \"2023-10-10T10:00:00Z\",\n  \"time\": \"2023-10-10T10:00:00Z\",\n  \"pet_id\": 1,\n  \"veterinarian_id\": 1,\n  \"reason_for_appointment\": \"Checkup\"\n}",
@@ -105,11 +158,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/appointments",
+              "raw": "http://localhost:8080/api/v1/appointments",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["appointments"]
+              "path": ["api", "v1", "appointments"]
             }
           },
           "response": []
@@ -118,7 +171,16 @@
           "name": "Update Appointment",
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"date\": \"2023-10-10T10:00:00Z\",\n  \"time\": \"2023-10-10T10:00:00Z\",\n  \"pet_id\": 1,\n  \"veterinarian_id\": 1,\n  \"reason_for_appointment\": \"Checkup\"\n}",
@@ -129,11 +191,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/appointments/:id",
+              "raw": "http://localhost:8080/api/v1/appointments/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["appointments", ":id"]
+              "path": ["api", "v1", "appointments", ":id"]
             }
           },
           "response": []
@@ -142,13 +204,18 @@
           "name": "Delete Appointment",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/appointments/:id",
+              "raw": "http://localhost:8080/api/v1/appointments/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["appointments", ":id"]
+              "path": ["api", "v1", "appointments", ":id"]
             }
           },
           "response": []
@@ -162,13 +229,18 @@
           "name": "Get Clients",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/clients",
+              "raw": "http://localhost:8080/api/v1/clients",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["clients"]
+              "path": ["api", "v1", "clients"]
             }
           },
           "response": []
@@ -177,13 +249,18 @@
           "name": "Get Client",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/clients/:id",
+              "raw": "http://localhost:8080/api/v1/clients/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["clients", ":id"]
+              "path": ["api", "v1", "clients", ":id"]
             }
           },
           "response": []
@@ -192,7 +269,16 @@
           "name": "Create Client",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"123-456-7890\"\n}",
@@ -203,11 +289,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/clients",
+              "raw": "http://localhost:8080/api/v1/clients",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["clients"]
+              "path": ["api", "v1", "clients"]
             }
           },
           "response": []
@@ -216,7 +302,16 @@
           "name": "Update Client",
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"123-456-7890\"\n}",
@@ -227,11 +322,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/clients/:id",
+              "raw": "http://localhost:8080/api/v1/clients/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["clients", ":id"]
+              "path": ["api", "v1", "clients", ":id"]
             }
           },
           "response": []
@@ -240,13 +335,18 @@
           "name": "Delete Client",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/clients/:id",
+              "raw": "http://localhost:8080/api/v1/clients/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["clients", ":id"]
+              "path": ["api", "v1", "clients", ":id"]
             }
           },
           "response": []
@@ -260,13 +360,18 @@
           "name": "Get Pets",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/pets",
+              "raw": "http://localhost:8080/api/v1/pets",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["pets"]
+              "path": ["api", "v1", "pets"]
             }
           },
           "response": []
@@ -275,13 +380,18 @@
           "name": "Get Pet",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/pets/:id",
+              "raw": "http://localhost:8080/api/v1/pets/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["pets", ":id"]
+              "path": ["api", "v1", "pets", ":id"]
             }
           },
           "response": []
@@ -290,7 +400,16 @@
           "name": "Create Pet",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Buddy\",\n  \"species\": \"Dog\",\n  \"breed\": \"Golden Retriever\",\n  \"age\": 3,\n  \"client_id\": 1\n}",
@@ -301,11 +420,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/pets",
+              "raw": "http://localhost:8080/api/v1/pets",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["pets"]
+              "path": ["api", "v1", "pets"]
             }
           },
           "response": []
@@ -314,7 +433,16 @@
           "name": "Update Pet",
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Buddy\",\n  \"species\": \"Dog\",\n  \"breed\": \"Golden Retriever\",\n  \"age\": 3,\n  \"client_id\": 1\n}",
@@ -325,11 +453,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/pets/:id",
+              "raw": "http://localhost:8080/api/v1/pets/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["pets", ":id"]
+              "path": ["api", "v1", "pets", ":id"]
             }
           },
           "response": []
@@ -338,13 +466,118 @@
           "name": "Delete Pet",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/pets/:id",
+              "raw": "http://localhost:8080/api/v1/pets/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["pets", ":id"]
+              "path": ["api", "v1", "pets", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pet Medical Records",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/pets/:id/medical-records",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "pets", ":id", "medical-records"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pet Vaccinations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/pets/:id/vaccinations",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "pets", ":id", "vaccinations"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pet Surgeries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/pets/:id/surgeries",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "pets", ":id", "surgeries"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pet Allergies",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/pets/:id/allergies",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "pets", ":id", "allergies"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pet Active Allergies",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/pets/:id/allergies/active",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "pets", ":id", "allergies", "active"]
             }
           },
           "response": []
@@ -358,13 +591,18 @@
           "name": "Get Veterinarians",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/veterinarians",
+              "raw": "http://localhost:8080/api/v1/veterinarians",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["veterinarians"]
+              "path": ["api", "v1", "veterinarians"]
             }
           },
           "response": []
@@ -373,13 +611,18 @@
           "name": "Get Veterinarian",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/veterinarians/:id",
+              "raw": "http://localhost:8080/api/v1/veterinarians/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["veterinarians", ":id"]
+              "path": ["api", "v1", "veterinarians", ":id"]
             }
           },
           "response": []
@@ -388,7 +631,16 @@
           "name": "Create Veterinarian",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Dr. Smith\",\n  \"specialty\": \"Surgery\"\n}",
@@ -399,11 +651,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/veterinarians",
+              "raw": "http://localhost:8080/api/v1/veterinarians",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["veterinarians"]
+              "path": ["api", "v1", "veterinarians"]
             }
           },
           "response": []
@@ -412,7 +664,16 @@
           "name": "Update Veterinarian",
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Dr. Smith\",\n  \"specialty\": \"Surgery\"\n}",
@@ -423,11 +684,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/veterinarians/:id",
+              "raw": "http://localhost:8080/api/v1/veterinarians/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["veterinarians", ":id"]
+              "path": ["api", "v1", "veterinarians", ":id"]
             }
           },
           "response": []
@@ -436,13 +697,18 @@
           "name": "Delete Veterinarian",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/veterinarians/:id",
+              "raw": "http://localhost:8080/api/v1/veterinarians/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["veterinarians", ":id"]
+              "path": ["api", "v1", "veterinarians", ":id"]
             }
           },
           "response": []
@@ -456,13 +722,18 @@
           "name": "Get Treatments",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/treatments",
+              "raw": "http://localhost:8080/api/v1/treatments",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["treatments"]
+              "path": ["api", "v1", "treatments"]
             }
           },
           "response": []
@@ -471,13 +742,18 @@
           "name": "Get Treatment",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/treatments/:id",
+              "raw": "http://localhost:8080/api/v1/treatments/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["treatments", ":id"]
+              "path": ["api", "v1", "treatments", ":id"]
             }
           },
           "response": []
@@ -486,7 +762,16 @@
           "name": "Create Treatment",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"description\": \"Vaccination\",\n  \"cost\": 50.0\n}",
@@ -497,11 +782,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/treatments",
+              "raw": "http://localhost:8080/api/v1/treatments",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["treatments"]
+              "path": ["api", "v1", "treatments"]
             }
           },
           "response": []
@@ -510,7 +795,16 @@
           "name": "Update Treatment",
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"description\": \"Vaccination\",\n  \"cost\": 50.0\n}",
@@ -521,11 +815,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/treatments/:id",
+              "raw": "http://localhost:8080/api/v1/treatments/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["treatments", ":id"]
+              "path": ["api", "v1", "treatments", ":id"]
             }
           },
           "response": []
@@ -534,13 +828,18 @@
           "name": "Delete Treatment",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/treatments/:id",
+              "raw": "http://localhost:8080/api/v1/treatments/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["treatments", ":id"]
+              "path": ["api", "v1", "treatments", ":id"]
             }
           },
           "response": []
@@ -554,13 +853,18 @@
           "name": "Get Invoices",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/invoices",
+              "raw": "http://localhost:8080/api/v1/invoices",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["invoices"]
+              "path": ["api", "v1", "invoices"]
             }
           },
           "response": []
@@ -569,13 +873,18 @@
           "name": "Get Invoice",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/invoices/:id",
+              "raw": "http://localhost:8080/api/v1/invoices/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["invoices", ":id"]
+              "path": ["api", "v1", "invoices", ":id"]
             }
           },
           "response": []
@@ -584,7 +893,16 @@
           "name": "Create Invoice",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"amount\": 100.0,\n  \"date\": \"2023-10-10T10:00:00Z\",\n  \"client_id\": 1\n}",
@@ -595,11 +913,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/invoices",
+              "raw": "http://localhost:8080/api/v1/invoices",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["invoices"]
+              "path": ["api", "v1", "invoices"]
             }
           },
           "response": []
@@ -608,7 +926,16 @@
           "name": "Update Invoice",
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"amount\": 100.0,\n  \"date\": \"2023-10-10T10:00:00Z\",\n  \"client_id\": 1\n}",
@@ -619,11 +946,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/invoices/:id",
+              "raw": "http://localhost:8080/api/v1/invoices/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["invoices", ":id"]
+              "path": ["api", "v1", "invoices", ":id"]
             }
           },
           "response": []
@@ -632,13 +959,18 @@
           "name": "Delete Invoice",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/invoices/:id",
+              "raw": "http://localhost:8080/api/v1/invoices/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["invoices", ":id"]
+              "path": ["api", "v1", "invoices", ":id"]
             }
           },
           "response": []
@@ -652,13 +984,18 @@
           "name": "Get Medications",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/medications",
+              "raw": "http://localhost:8080/api/v1/medications",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["medications"]
+              "path": ["api", "v1", "medications"]
             }
           },
           "response": []
@@ -667,13 +1004,18 @@
           "name": "Get Medication",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/medications/:id",
+              "raw": "http://localhost:8080/api/v1/medications/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["medications", ":id"]
+              "path": ["api", "v1", "medications", ":id"]
             }
           },
           "response": []
@@ -682,7 +1024,16 @@
           "name": "Create Medication",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Antibiotic\",\n  \"dosage\": \"2 pills per day\",\n  \"pet_id\": 1\n}",
@@ -693,11 +1044,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/medications",
+              "raw": "http://localhost:8080/api/v1/medications",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["medications"]
+              "path": ["api", "v1", "medications"]
             }
           },
           "response": []
@@ -706,7 +1057,16 @@
           "name": "Update Medication",
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Antibiotic\",\n  \"dosage\": \"2 pills per day\",\n  \"pet_id\": 1\n}",
@@ -717,11 +1077,11 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/medications/:id",
+              "raw": "http://localhost:8080/api/v1/medications/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["medications", ":id"]
+              "path": ["api", "v1", "medications", ":id"]
             }
           },
           "response": []
@@ -730,13 +1090,774 @@
           "name": "Delete Medication",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:8080/medications/:id",
+              "raw": "http://localhost:8080/api/v1/medications/:id",
               "protocol": "http",
               "host": ["localhost"],
               "port": "8080",
-              "path": ["medications", ":id"]
+              "path": ["api", "v1", "medications", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Medical Record",
+      "item": [
+        {
+          "name": "Get Medical Records",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/medical-records",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "medical-records"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Medical Record",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/medical-records/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "medical-records", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Medical Record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pet_id\": 1,\n  \"date\": \"2023-10-10T10:00:00Z\",\n  \"diagnosis\": \"Healthy\",\n  \"treatment\": \"Regular checkup\",\n  \"notes\": \"All vital signs normal\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/medical-records",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "medical-records"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Medical Record",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pet_id\": 1,\n  \"date\": \"2023-10-10T10:00:00Z\",\n  \"diagnosis\": \"Healthy\",\n  \"treatment\": \"Regular checkup\",\n  \"notes\": \"All vital signs normal\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/medical-records/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "medical-records", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Medical Record",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/medical-records/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "medical-records", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Vaccination",
+      "item": [
+        {
+          "name": "Get Vaccinations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/vaccinations",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "vaccinations"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Vaccination",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/vaccinations/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "vaccinations", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Due Vaccinations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/vaccinations/due",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "vaccinations", "due"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Overdue Vaccinations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/vaccinations/overdue",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "vaccinations", "overdue"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Vaccination",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pet_id\": 1,\n  \"name\": \"Rabies\",\n  \"scheduled_date\": \"2023-12-01T10:00:00Z\",\n  \"status\": \"scheduled\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/vaccinations",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "vaccinations"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Vaccination",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pet_id\": 1,\n  \"name\": \"Rabies\",\n  \"scheduled_date\": \"2023-12-01T10:00:00Z\",\n  \"status\": \"scheduled\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/vaccinations/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "vaccinations", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Complete Vaccination",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/vaccinations/:id/complete",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "vaccinations", ":id", "complete"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Vaccination",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/vaccinations/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "vaccinations", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Surgery",
+      "item": [
+        {
+          "name": "Get Surgeries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/surgeries",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "surgeries"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Surgery",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/surgeries/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "surgeries", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Surgeries by Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/surgeries/status?status=scheduled",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "surgeries", "status"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "scheduled"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Scheduled Surgeries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/surgeries/scheduled",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "surgeries", "scheduled"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Surgery",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pet_id\": 1,\n  \"veterinarian_id\": 1,\n  \"procedure_name\": \"Spay\",\n  \"scheduled_date\": \"2023-12-15T09:00:00Z\",\n  \"status\": \"scheduled\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/surgeries",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "surgeries"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Surgery",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pet_id\": 1,\n  \"veterinarian_id\": 1,\n  \"procedure_name\": \"Spay\",\n  \"scheduled_date\": \"2023-12-15T09:00:00Z\",\n  \"status\": \"scheduled\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/surgeries/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "surgeries", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Start Surgery",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/surgeries/:id/start",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "surgeries", ":id", "start"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Complete Surgery",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/surgeries/:id/complete",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "surgeries", ":id", "complete"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Surgery",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/surgeries/:id/cancel",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "surgeries", ":id", "cancel"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Surgery",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/surgeries/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "surgeries", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Allergy",
+      "item": [
+        {
+          "name": "Get Allergies",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/allergies",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "allergies"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Allergy",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/allergies/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "allergies", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Allergies by Severity",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/allergies/severity?severity=high",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "allergies", "severity"],
+              "query": [
+                {
+                  "key": "severity",
+                  "value": "high"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Allergy",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pet_id\": 1,\n  \"allergen\": \"Chicken\",\n  \"severity\": \"moderate\",\n  \"diagnosed_date\": \"2023-10-01T00:00:00Z\",\n  \"is_active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/allergies",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "allergies"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Allergy",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pet_id\": 1,\n  \"allergen\": \"Chicken\",\n  \"severity\": \"moderate\",\n  \"diagnosed_date\": \"2023-10-01T00:00:00Z\",\n  \"is_active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/allergies/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "allergies", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deactivate Allergy",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/allergies/:id/deactivate",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "allergies", ":id", "deactivate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reactivate Allergy",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/allergies/:id/reactivate",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "allergies", ":id", "reactivate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Allergy",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/allergies/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "allergies", ":id"]
             }
           },
           "response": []
