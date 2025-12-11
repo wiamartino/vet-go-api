@@ -120,6 +120,7 @@ func TestAuthController(t *testing.T) {
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
 		assert.Equal(t, "error", response["status"])
-		assert.Equal(t, "Invalid input data", response["error"])
+		// The controller prefixes JSON parse errors with a descriptive message
+		assert.Contains(t, response["error"], "Invalid request format:")
 	})
 }

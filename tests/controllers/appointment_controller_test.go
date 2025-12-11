@@ -109,7 +109,7 @@ func TestAppointmentController(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		// Assert
-		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, http.StatusCreated, w.Code)
 
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
@@ -221,7 +221,7 @@ func TestAppointmentController(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		// Assert
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
+		assert.Equal(t, http.StatusNotFound, w.Code)
 
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
@@ -290,13 +290,10 @@ func TestAppointmentController(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		// Assert
-		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, http.StatusNoContent, w.Code)
 
-		var response map[string]interface{}
-		err := json.Unmarshal(w.Body.Bytes(), &response)
-		assert.NoError(t, err)
-		assert.Equal(t, "success", response["status"])
-		assert.Equal(t, "Appointment deleted", response["data"])
+		// No content expected on 204
+		assert.Equal(t, 0, w.Body.Len())
 
 		mockRepo.AssertExpectations(t)
 	})
