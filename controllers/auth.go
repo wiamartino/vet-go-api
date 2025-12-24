@@ -20,6 +20,16 @@ func NewAuthController(service *application.UserService) *AuthController {
 }
 
 // Register creates a new user account
+// @Summary Register a new user
+// @Description Create a new user account with email and password
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param user body domain.User true "User registration details"
+// @Success 201 {object} map[string]string "User registered successfully"
+// @Failure 400 {object} map[string]interface{} "Invalid request format or validation errors"
+// @Failure 409 {object} map[string]string "Email already registered"
+// @Router /auth/register [post]
 func (ctrl *AuthController) Register(c *gin.Context) {
 	var user domain.User
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -60,6 +70,16 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 }
 
 // Login authenticates a user and provides a JWT token
+// @Summary Login user
+// @Description Authenticate user and return JWT token
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param credentials body object{email=string,password=string} true "Login credentials"
+// @Success 200 {object} map[string]interface{} "Login successful with token"
+// @Failure 400 {object} map[string]string "Invalid request format"
+// @Failure 401 {object} map[string]string "Invalid email or password"
+// @Router /auth/login [post]
 func (ctrl *AuthController) Login(c *gin.Context) {
 	var credentials struct {
 		Email    string `json:"email" binding:"required,email"`

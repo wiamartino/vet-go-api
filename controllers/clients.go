@@ -18,6 +18,16 @@ func NewClientController(service *application.ClientService) *ClientController {
 	return &ClientController{service: service}
 }
 
+// FindClients retrieves all clients
+// @Summary Get all clients
+// @Description Get a list of all registered clients
+// @Tags Clients
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {array} domain.Client "List of clients"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /clients [get]
 func (ctrl *ClientController) FindClients(c *gin.Context) {
 	clients, err := ctrl.service.GetAllClients()
 	if err != nil {
@@ -27,6 +37,19 @@ func (ctrl *ClientController) FindClients(c *gin.Context) {
 	utils.RespondWithSuccess(c, http.StatusOK, clients)
 }
 
+// CreateClient creates a new client
+// @Summary Create a new client
+// @Description Register a new client in the system
+// @Tags Clients
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param client body domain.Client true "Client details"
+// @Success 201 {object} domain.Client "Client created successfully"
+// @Failure 400 {object} map[string]interface{} "Invalid request format or validation errors"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /clients [post]
 func (ctrl *ClientController) CreateClient(c *gin.Context) {
 	var client domain.Client
 	if err := c.ShouldBindJSON(&client); err != nil {
@@ -59,6 +82,18 @@ func (ctrl *ClientController) CreateClient(c *gin.Context) {
 	utils.RespondWithCreated(c, client)
 }
 
+// FindClient retrieves a client by ID
+// @Summary Get client by ID
+// @Description Get detailed information about a specific client
+// @Tags Clients
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "Client ID"
+// @Success 200 {object} domain.Client "Client details"
+// @Failure 400 {object} map[string]string "Invalid client ID format"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "Client not found"
+// @Router /clients/{id} [get]
 func (ctrl *ClientController) FindClient(c *gin.Context) {
 	clientID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {

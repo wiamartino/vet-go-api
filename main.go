@@ -7,8 +7,30 @@ import (
 	"go-vet/routes"
 	"go-vet/utils"
 
+	_ "go-vet/docs" // Import generated docs
+
 	"github.com/sirupsen/logrus"
 )
+
+// @title Veterinary Management System API
+// @version 1.0
+// @description API for managing veterinary clinic operations including appointments, medical records, treatments, and more.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.veterinary-system.io/support
+// @contact.email support@veterinary-system.io
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:8080
+// @BasePath /api/v1
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
 
 func main() {
 	// Initialize logging first

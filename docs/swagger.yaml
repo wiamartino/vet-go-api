@@ -1,0 +1,601 @@
+basePath: /api/v1
+definitions:
+  domain.Appointment:
+    properties:
+      appointment_id:
+        type: integer
+      date:
+        type: string
+      pet:
+        allOf:
+        - $ref: '#/definitions/domain.Pet'
+        description: '`gorm:"foreignKey:PetID"`'
+      pet_id:
+        type: integer
+      reason_for_appointment:
+        type: string
+      time:
+        type: string
+      veterinarian:
+        allOf:
+        - $ref: '#/definitions/domain.Veterinarian'
+        description: '`gorm:"foreignKey:VeterinarianID"`'
+      veterinarian_id:
+        type: integer
+    type: object
+  domain.Client:
+    properties:
+      address:
+        maxLength: 255
+        minLength: 5
+        type: string
+      client_id:
+        type: integer
+      email:
+        type: string
+      first_name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      last_name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      pets:
+        items:
+          $ref: '#/definitions/domain.Pet'
+        type: array
+      phone:
+        maxLength: 20
+        minLength: 10
+        type: string
+    required:
+    - address
+    - email
+    - first_name
+    - last_name
+    - phone
+    type: object
+  domain.MedicalRecord:
+    properties:
+      appointment:
+        $ref: '#/definitions/domain.Appointment'
+      appointment_id:
+        description: Optional link to appointment
+        type: integer
+      created_at:
+        type: string
+      diagnosis:
+        type: string
+      heart_rate:
+        description: beats per minute
+        type: integer
+      medical_record_id:
+        type: integer
+      notes:
+        type: string
+      pet:
+        allOf:
+        - $ref: '#/definitions/domain.Pet'
+        description: Relations
+      pet_id:
+        type: integer
+      symptoms:
+        type: string
+      temperature:
+        description: in celsius
+        type: number
+      updated_at:
+        type: string
+      veterinarian:
+        $ref: '#/definitions/domain.Veterinarian'
+      veterinarian_id:
+        type: integer
+      visit_date:
+        type: string
+      weight:
+        description: in kg
+        type: number
+    type: object
+  domain.Pet:
+    properties:
+      breed:
+        type: string
+      client_id:
+        type: integer
+      date_of_birth:
+        type: string
+      name:
+        type: string
+      pet_id:
+        type: integer
+      species:
+        type: string
+    type: object
+  domain.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      last_login:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      password:
+        minLength: 8
+        type: string
+      role:
+        enum:
+        - admin
+        - user
+        - veterinarian
+        type: string
+      updated_at:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  domain.Veterinarian:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      phone:
+        type: string
+      specialty:
+        type: string
+      veterinarian_id:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@veterinary-system.io
+    name: API Support
+    url: http://www.veterinary-system.io/support
+  description: API for managing veterinary clinic operations including appointments,
+    medical records, treatments, and more.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Veterinary Management System API
+  version: "1.0"
+paths:
+  /api/v1/medical-records:
+    get:
+      consumes:
+      - application/json
+      description: Get all medical records
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.MedicalRecord'
+            type: array
+      summary: Get all medical records
+      tags:
+      - medical-records
+    post:
+      consumes:
+      - application/json
+      description: Create a new medical record
+      parameters:
+      - description: Medical Record
+        in: body
+        name: record
+        required: true
+        schema:
+          $ref: '#/definitions/domain.MedicalRecord'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.MedicalRecord'
+      summary: Create a new medical record
+      tags:
+      - medical-records
+  /api/v1/medical-records/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a medical record by ID
+      parameters:
+      - description: Medical Record ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a medical record
+      tags:
+      - medical-records
+    get:
+      consumes:
+      - application/json
+      description: Get a medical record by ID
+      parameters:
+      - description: Medical Record ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.MedicalRecord'
+      summary: Get medical record by ID
+      tags:
+      - medical-records
+    put:
+      consumes:
+      - application/json
+      description: Update an existing medical record
+      parameters:
+      - description: Medical Record ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Medical Record
+        in: body
+        name: record
+        required: true
+        schema:
+          $ref: '#/definitions/domain.MedicalRecord'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.MedicalRecord'
+      summary: Update a medical record
+      tags:
+      - medical-records
+  /api/v1/pets/{id}/medical-records:
+    get:
+      consumes:
+      - application/json
+      description: Get all medical records for a specific pet
+      parameters:
+      - description: Pet ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.MedicalRecord'
+            type: array
+      summary: Get medical records by pet ID
+      tags:
+      - medical-records
+  /appointments:
+    get:
+      description: Get a list of all appointments
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of appointments
+          schema:
+            items:
+              $ref: '#/definitions/domain.Appointment'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all appointments
+      tags:
+      - Appointments
+    post:
+      consumes:
+      - application/json
+      description: Schedule a new appointment for a pet with a veterinarian
+      parameters:
+      - description: Appointment details
+        in: body
+        name: appointment
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Appointment'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Appointment created successfully
+          schema:
+            $ref: '#/definitions/domain.Appointment'
+        "400":
+          description: Invalid request format or validation errors
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new appointment
+      tags:
+      - Appointments
+  /appointments/{id}:
+    get:
+      description: Get detailed information about a specific appointment
+      parameters:
+      - description: Appointment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Appointment details
+          schema:
+            $ref: '#/definitions/domain.Appointment'
+        "400":
+          description: Invalid appointment ID format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Appointment not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get appointment by ID
+      tags:
+      - Appointments
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+            password:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful with token
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Invalid email or password
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login user
+      tags:
+      - Authentication
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account with email and password
+      parameters:
+      - description: User registration details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/domain.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request format or validation errors
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Email already registered
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - Authentication
+  /clients:
+    get:
+      description: Get a list of all registered clients
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of clients
+          schema:
+            items:
+              $ref: '#/definitions/domain.Client'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all clients
+      tags:
+      - Clients
+    post:
+      consumes:
+      - application/json
+      description: Register a new client in the system
+      parameters:
+      - description: Client details
+        in: body
+        name: client
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Client'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Client created successfully
+          schema:
+            $ref: '#/definitions/domain.Client'
+        "400":
+          description: Invalid request format or validation errors
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new client
+      tags:
+      - Clients
+  /clients/{id}:
+    get:
+      description: Get detailed information about a specific client
+      parameters:
+      - description: Client ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Client details
+          schema:
+            $ref: '#/definitions/domain.Client'
+        "400":
+          description: Invalid client ID format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Client not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get client by ID
+      tags:
+      - Clients
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

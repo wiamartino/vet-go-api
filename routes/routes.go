@@ -9,6 +9,8 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func SetupRouter(db *database.DB) *gin.Engine {
@@ -29,6 +31,9 @@ func SetupRouter(db *database.DB) *gin.Engine {
 
 	r.Use(cors.New(config))
 	r.Use(middlewares.MetricsMiddleware())
+
+	// Swagger documentation route
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Public auth routes
 	setupAuthRoutes(r, db)

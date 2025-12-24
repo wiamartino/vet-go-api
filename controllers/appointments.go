@@ -18,6 +18,16 @@ func NewAppointmentController(service *application.AppointmentService) *Appointm
 	return &AppointmentController{service: service}
 }
 
+// FindAppointments retrieves all appointments
+// @Summary Get all appointments
+// @Description Get a list of all appointments
+// @Tags Appointments
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {array} domain.Appointment "List of appointments"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /appointments [get]
 func (ctrl *AppointmentController) FindAppointments(c *gin.Context) {
 	appointments, err := ctrl.service.GetAllAppointments()
 	if err != nil {
@@ -27,6 +37,19 @@ func (ctrl *AppointmentController) FindAppointments(c *gin.Context) {
 	utils.RespondWithSuccess(c, http.StatusOK, appointments)
 }
 
+// CreateAppointment creates a new appointment
+// @Summary Create a new appointment
+// @Description Schedule a new appointment for a pet with a veterinarian
+// @Tags Appointments
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param appointment body domain.Appointment true "Appointment details"
+// @Success 201 {object} domain.Appointment "Appointment created successfully"
+// @Failure 400 {object} map[string]interface{} "Invalid request format or validation errors"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /appointments [post]
 func (ctrl *AppointmentController) CreateAppointment(c *gin.Context) {
 	var appointment domain.Appointment
 	if err := c.ShouldBindJSON(&appointment); err != nil {
@@ -57,6 +80,18 @@ func (ctrl *AppointmentController) CreateAppointment(c *gin.Context) {
 	utils.RespondWithCreated(c, appointment)
 }
 
+// FindAppointment retrieves an appointment by ID
+// @Summary Get appointment by ID
+// @Description Get detailed information about a specific appointment
+// @Tags Appointments
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "Appointment ID"
+// @Success 200 {object} domain.Appointment "Appointment details"
+// @Failure 400 {object} map[string]string "Invalid appointment ID format"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "Appointment not found"
+// @Router /appointments/{id} [get]
 func (ctrl *AppointmentController) FindAppointment(c *gin.Context) {
 	appointmentID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
