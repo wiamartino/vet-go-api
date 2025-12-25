@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"os"
+
 	"go-vet/application"
 	"go-vet/controllers"
 	"go-vet/infrastructure/database"
@@ -9,6 +11,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -37,6 +40,13 @@ func SetupRouter(db *database.DB) *gin.Engine {
 
 	// Public auth routes
 	setupAuthRoutes(r, db)
+
+	// Log authentication status
+	if os.Getenv("DISABLE_AUTH") == "true" {
+		logrus.Warn("⚠️⚠️⚠️  AUTHENTICATION DISABLED - USE ONLY IN DEVELOPMENT  ⚠️⚠️⚠️")
+	} else {
+		logrus.Info("✓ Authentication enabled")
+	}
 
 	// Authentication & audit required for these routes
 	authorized := r.Group("/api/v1")

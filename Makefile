@@ -11,6 +11,7 @@ help:
 	@echo "Available targets:"
 	@echo "  make build              - Build the application"
 	@echo "  make run                - Run the application"
+	@echo "  make run-no-auth        - Run the application with authentication disabled"
 	@echo "  make test               - Run all tests (unit + integration)"
 	@echo "  make test-unit          - Run unit tests only"
 	@echo "  make test-integration   - Run integration tests"
@@ -31,6 +32,12 @@ build:
 run:
 	@echo "Running $(APP_NAME)..."
 	go run $(MAIN_PATH)
+
+# Run the application with authentication disabled (DEVELOPMENT ONLY)
+run-no-auth:
+	@echo "⚠️  Running $(APP_NAME) with AUTHENTICATION DISABLED ⚠️"
+	@echo "⚠️  This should ONLY be used in development!"
+	DISABLE_AUTH=true go run $(MAIN_PATH)
 
 # Run all tests
 test: test-unit test-integration

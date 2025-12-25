@@ -10,6 +10,26 @@ Once the application is running, you can access the Swagger UI at:
 http://localhost:8080/swagger/index.html
 ```
 
+## Development Mode - Disable Authentication
+
+For development and testing purposes, you can disable authentication entirely by setting the `DISABLE_AUTH` environment variable:
+
+```bash
+# Run with authentication disabled
+DISABLE_AUTH=true go run main.go
+
+# Or using the Makefile
+make run-no-auth
+```
+
+**⚠️ WARNING**: This should **ONLY** be used in development environments. Never disable authentication in production!
+
+When authentication is disabled:
+- All requests will automatically have admin privileges
+- No Authorization header is required
+- You can test endpoints directly without logging in
+- A warning message will appear in the logs
+
 ## Using the API with Authentication
 
 Most endpoints require authentication. Follow these steps:

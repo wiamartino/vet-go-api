@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"net/http"
+	"os"
 	"strings"
 
 	jwtUtils "go-vet/utils/jwt"
@@ -11,8 +12,19 @@ import (
 )
 
 // AuthMiddleware validates JWT tokens and sets user information in the context
+// Can be disabled by setting DISABLE_AUTH=true environment variable
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Check if auth is disabled via environment variable
+		if os.Getenv("DISABLE_AUTH") == "true" {
+			logrus.Warn("⚠️  Authentication is DISABLED - DEVELOPMENT MODE ONLY")
+			// Set default user context for development
+			c.Set("userID", uint(1))
+			c.Set("email", "dev@example.com")
+			c.Set("role", "admin")
+			c.Next()
+			return
+		}
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{
