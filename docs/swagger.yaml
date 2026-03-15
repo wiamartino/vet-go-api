@@ -1,5 +1,58 @@
 basePath: /api/v1
 definitions:
+  domain.Allergy:
+    properties:
+      allergen:
+        type: string
+      allergy_id:
+        type: integer
+      allergy_type:
+        $ref: '#/definitions/domain.AllergyType'
+      created_at:
+        type: string
+      diagnosed_by:
+        type: integer
+      diagnosed_date:
+        type: string
+      is_active:
+        type: boolean
+      notes:
+        type: string
+      pet_id:
+        type: integer
+      reaction:
+        type: string
+      severity:
+        $ref: '#/definitions/domain.AllergySeverity'
+      updated_at:
+        type: string
+    type: object
+  domain.AllergySeverity:
+    enum:
+    - mild
+    - moderate
+    - severe
+    - fatal
+    type: string
+    x-enum-varnames:
+    - AllergySeverityMild
+    - AllergySeverityModerate
+    - AllergySeveritySevere
+    - AllergySeverityFatal
+  domain.AllergyType:
+    enum:
+    - food
+    - medication
+    - environment
+    - insect
+    - other
+    type: string
+    x-enum-varnames:
+    - AllergyTypeFood
+    - AllergyTypeMedication
+    - AllergyTypeEnvironment
+    - AllergyTypeInsect
+    - AllergyTypeOther
   domain.Appointment:
     properties:
       appointment_id:
@@ -56,6 +109,27 @@ definitions:
     - last_name
     - phone
     type: object
+  domain.Invoice:
+    properties:
+      appointment:
+        allOf:
+        - $ref: '#/definitions/domain.Appointment'
+        description: '`gorm:"foreignKey:AppointmentID"`'
+      appointment_id:
+        type: integer
+      client:
+        allOf:
+        - $ref: '#/definitions/domain.Client'
+        description: '`gorm:"foreignKey:ClientID"`'
+      client_id:
+        type: integer
+      date:
+        type: string
+      invoice_id:
+        type: integer
+      total:
+        type: number
+    type: object
   domain.MedicalRecord:
     properties:
       appointment:
@@ -97,6 +171,17 @@ definitions:
         description: in kg
         type: number
     type: object
+  domain.Medication:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+    type: object
   domain.Pet:
     properties:
       breed:
@@ -111,6 +196,84 @@ definitions:
         type: integer
       species:
         type: string
+    type: object
+  domain.Surgery:
+    properties:
+      actual_date:
+        type: string
+      anesthesia_used:
+        type: string
+      complications:
+        type: string
+      cost:
+        type: number
+      created_at:
+        type: string
+      duration:
+        type: integer
+      follow_up_date:
+        type: string
+      follow_up_required:
+        type: boolean
+      pet:
+        allOf:
+        - $ref: '#/definitions/domain.Pet'
+        description: Relations
+      pet_id:
+        type: integer
+      post_op_notes:
+        type: string
+      pre_op_notes:
+        type: string
+      scheduled_date:
+        type: string
+      status:
+        $ref: '#/definitions/domain.SurgeryStatus'
+      surgery_id:
+        type: integer
+      surgery_name:
+        type: string
+      surgery_type:
+        $ref: '#/definitions/domain.SurgeryType'
+      updated_at:
+        type: string
+      veterinarian:
+        $ref: '#/definitions/domain.Veterinarian'
+      veterinarian_id:
+        type: integer
+    type: object
+  domain.SurgeryStatus:
+    enum:
+    - scheduled
+    - in_progress
+    - completed
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - SurgeryStatusScheduled
+    - SurgeryStatusInProgress
+    - SurgeryStatusCompleted
+    - SurgeryStatusCancelled
+  domain.SurgeryType:
+    enum:
+    - routine
+    - emergency
+    - elective
+    type: string
+    x-enum-varnames:
+    - SurgeryTypeRoutine
+    - SurgeryTypeEmergency
+    - SurgeryTypeElective
+  domain.Treatment:
+    properties:
+      cost:
+        type: number
+      description:
+        type: string
+      name:
+        type: string
+      treatment_id:
+        type: integer
     type: object
   domain.User:
     properties:
@@ -142,6 +305,53 @@ definitions:
     - name
     - password
     type: object
+  domain.Vaccination:
+    properties:
+      batch_number:
+        type: string
+      created_at:
+        type: string
+      date_administered:
+        type: string
+      date_scheduled:
+        type: string
+      manufacturer:
+        type: string
+      next_due_date:
+        type: string
+      notes:
+        type: string
+      pet:
+        $ref: '#/definitions/domain.Pet'
+      pet_id:
+        type: integer
+      side_effects:
+        type: string
+      status:
+        $ref: '#/definitions/domain.VaccinationStatus'
+      updated_at:
+        type: string
+      vaccination_id:
+        type: integer
+      vaccine_name:
+        type: string
+      veterinarian:
+        $ref: '#/definitions/domain.Veterinarian'
+      veterinarian_id:
+        type: integer
+    type: object
+  domain.VaccinationStatus:
+    enum:
+    - scheduled
+    - completed
+    - overdue
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - VaccinationStatusScheduled
+    - VaccinationStatusCompleted
+    - VaccinationStatusOverdue
+    - VaccinationStatusCancelled
   domain.Veterinarian:
     properties:
       email:
@@ -172,6 +382,324 @@ info:
   title: Veterinary Management System API
   version: "1.0"
 paths:
+  /allergies:
+    get:
+      description: Get a list of all recorded allergies
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of allergies
+          schema:
+            items:
+              $ref: '#/definitions/domain.Allergy'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all allergies
+      tags:
+      - Allergies
+    post:
+      consumes:
+      - application/json
+      description: Record a new allergy for a pet
+      parameters:
+      - description: Allergy details
+        in: body
+        name: allergy
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Allergy'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Allergy created successfully
+          schema:
+            $ref: '#/definitions/domain.Allergy'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new allergy
+      tags:
+      - Allergies
+  /allergies/{id}:
+    delete:
+      description: Remove an allergy record from the system
+      parameters:
+      - description: Allergy ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Allergy deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid allergy ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete allergy by ID
+      tags:
+      - Allergies
+    get:
+      description: Get detailed information about a specific allergy
+      parameters:
+      - description: Allergy ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Allergy details
+          schema:
+            $ref: '#/definitions/domain.Allergy'
+        "400":
+          description: Invalid allergy ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Allergy not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get allergy by ID
+      tags:
+      - Allergies
+    put:
+      consumes:
+      - application/json
+      description: Update information for a specific allergy
+      parameters:
+      - description: Allergy ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Allergy details
+        in: body
+        name: allergy
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Allergy'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Allergy updated successfully
+          schema:
+            $ref: '#/definitions/domain.Allergy'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update allergy by ID
+      tags:
+      - Allergies
+  /allergies/{id}/deactivate:
+    post:
+      description: Mark an allergy as inactive
+      parameters:
+      - description: Allergy ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Allergy deactivated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid allergy ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Deactivate an allergy
+      tags:
+      - Allergies
+  /allergies/{id}/reactivate:
+    post:
+      description: Mark an allergy as active again
+      parameters:
+      - description: Allergy ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Allergy reactivated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid allergy ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Reactivate an allergy
+      tags:
+      - Allergies
+  /allergies/severity:
+    get:
+      description: Get all allergies filtered by severity level
+      parameters:
+      - description: Allergy severity (mild, moderate, severe, fatal)
+        in: query
+        name: severity
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of allergies with the specified severity
+          schema:
+            items:
+              $ref: '#/definitions/domain.Allergy'
+            type: array
+        "400":
+          description: Severity parameter is required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get allergies by severity
+      tags:
+      - Allergies
   /api/v1/medical-records:
     get:
       consumes:
@@ -592,6 +1120,1918 @@ paths:
       summary: Get client by ID
       tags:
       - Clients
+  /invoices:
+    get:
+      description: Get a list of all invoices
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of invoices
+          schema:
+            items:
+              $ref: '#/definitions/domain.Invoice'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all invoices
+      tags:
+      - Invoices
+    post:
+      consumes:
+      - application/json
+      description: Create a new invoice for a client appointment
+      parameters:
+      - description: Invoice details
+        in: body
+        name: invoice
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Invoice'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Invoice created successfully
+          schema:
+            $ref: '#/definitions/domain.Invoice'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new invoice
+      tags:
+      - Invoices
+  /invoices/{id}:
+    delete:
+      description: Remove an invoice from the system
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Invoice deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid invoice ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete invoice by ID
+      tags:
+      - Invoices
+    get:
+      description: Get detailed information about a specific invoice
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Invoice details
+          schema:
+            $ref: '#/definitions/domain.Invoice'
+        "400":
+          description: Invalid invoice ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Invoice not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get invoice by ID
+      tags:
+      - Invoices
+    put:
+      consumes:
+      - application/json
+      description: Update information for a specific invoice
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Invoice details
+        in: body
+        name: invoice
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Invoice'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Invoice updated successfully
+          schema:
+            $ref: '#/definitions/domain.Invoice'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Invoice not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update invoice by ID
+      tags:
+      - Invoices
+  /medications:
+    get:
+      description: Get a list of all available medications
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of medications
+          schema:
+            items:
+              $ref: '#/definitions/domain.Medication'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all medications
+      tags:
+      - Medications
+    post:
+      consumes:
+      - application/json
+      description: Add a new medication to the system
+      parameters:
+      - description: Medication details
+        in: body
+        name: medication
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Medication'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Medication created successfully
+          schema:
+            $ref: '#/definitions/domain.Medication'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new medication
+      tags:
+      - Medications
+  /medications/{id}:
+    delete:
+      description: Remove a medication from the system
+      parameters:
+      - description: Medication ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Medication deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid medication ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete medication by ID
+      tags:
+      - Medications
+    get:
+      description: Get detailed information about a specific medication
+      parameters:
+      - description: Medication ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Medication details
+          schema:
+            $ref: '#/definitions/domain.Medication'
+        "400":
+          description: Invalid medication ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Medication not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get medication by ID
+      tags:
+      - Medications
+    put:
+      consumes:
+      - application/json
+      description: Update information for a specific medication
+      parameters:
+      - description: Medication ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Medication details
+        in: body
+        name: medication
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Medication'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Medication updated successfully
+          schema:
+            $ref: '#/definitions/domain.Medication'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Medication not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update medication by ID
+      tags:
+      - Medications
+  /pets:
+    get:
+      description: Get a list of all registered pets
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of pets
+          schema:
+            items:
+              $ref: '#/definitions/domain.Pet'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all pets
+      tags:
+      - Pets
+    post:
+      consumes:
+      - application/json
+      description: Register a new pet in the system
+      parameters:
+      - description: Pet details
+        in: body
+        name: pet
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Pet'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Pet created successfully
+          schema:
+            $ref: '#/definitions/domain.Pet'
+        "400":
+          description: Invalid request format or validation errors
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new pet
+      tags:
+      - Pets
+  /pets/{id}:
+    delete:
+      description: Delete a specific pet from the system
+      parameters:
+      - description: Pet ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Pet deleted successfully
+        "400":
+          description: Invalid pet ID format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Pet not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete pet by ID
+      tags:
+      - Pets
+    get:
+      description: Get detailed information about a specific pet
+      parameters:
+      - description: Pet ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Pet details
+          schema:
+            $ref: '#/definitions/domain.Pet'
+        "400":
+          description: Invalid pet ID format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Pet not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get pet by ID
+      tags:
+      - Pets
+    put:
+      consumes:
+      - application/json
+      description: Update information for a specific pet
+      parameters:
+      - description: Pet ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Pet details
+        in: body
+        name: pet
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Pet'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Pet updated successfully
+          schema:
+            $ref: '#/definitions/domain.Pet'
+        "400":
+          description: Invalid request format or validation errors
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Pet not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update pet by ID
+      tags:
+      - Pets
+  /pets/{id}/allergies:
+    get:
+      description: Get all allergies for a specific pet
+      parameters:
+      - description: Pet ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of allergies for the pet
+          schema:
+            items:
+              $ref: '#/definitions/domain.Allergy'
+            type: array
+        "400":
+          description: Invalid pet ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get allergies by pet ID
+      tags:
+      - Allergies
+  /pets/{id}/allergies/active:
+    get:
+      description: Get all active allergies for a specific pet
+      parameters:
+      - description: Pet ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of active allergies for the pet
+          schema:
+            items:
+              $ref: '#/definitions/domain.Allergy'
+            type: array
+        "400":
+          description: Invalid pet ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get active allergies by pet ID
+      tags:
+      - Allergies
+  /pets/{id}/surgeries:
+    get:
+      description: Get all surgeries for a specific pet
+      parameters:
+      - description: Pet ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of surgeries for the pet
+          schema:
+            items:
+              $ref: '#/definitions/domain.Surgery'
+            type: array
+        "400":
+          description: Invalid pet ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get surgeries by pet ID
+      tags:
+      - Surgeries
+  /pets/{id}/vaccinations:
+    get:
+      description: Get all vaccinations for a specific pet
+      parameters:
+      - description: Pet ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of vaccinations for the pet
+          schema:
+            items:
+              $ref: '#/definitions/domain.Vaccination'
+            type: array
+        "400":
+          description: Invalid pet ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get vaccinations by pet ID
+      tags:
+      - Vaccinations
+  /surgeries:
+    get:
+      description: Get a list of all surgeries
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of surgeries
+          schema:
+            items:
+              $ref: '#/definitions/domain.Surgery'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all surgeries
+      tags:
+      - Surgeries
+    post:
+      consumes:
+      - application/json
+      description: Schedule a new surgery for a pet
+      parameters:
+      - description: Surgery details
+        in: body
+        name: surgery
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Surgery'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Surgery created successfully
+          schema:
+            $ref: '#/definitions/domain.Surgery'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new surgery
+      tags:
+      - Surgeries
+  /surgeries/{id}:
+    delete:
+      description: Remove a surgery from the system
+      parameters:
+      - description: Surgery ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Surgery deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid surgery ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete surgery by ID
+      tags:
+      - Surgeries
+    get:
+      description: Get detailed information about a specific surgery
+      parameters:
+      - description: Surgery ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Surgery details
+          schema:
+            $ref: '#/definitions/domain.Surgery'
+        "400":
+          description: Invalid surgery ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Surgery not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get surgery by ID
+      tags:
+      - Surgeries
+    put:
+      consumes:
+      - application/json
+      description: Update information for a specific surgery
+      parameters:
+      - description: Surgery ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Surgery details
+        in: body
+        name: surgery
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Surgery'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Surgery updated successfully
+          schema:
+            $ref: '#/definitions/domain.Surgery'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update surgery by ID
+      tags:
+      - Surgeries
+  /surgeries/{id}/cancel:
+    post:
+      description: Mark a surgery as cancelled
+      parameters:
+      - description: Surgery ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Surgery cancelled successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid surgery ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Cancel a surgery
+      tags:
+      - Surgeries
+  /surgeries/{id}/complete:
+    post:
+      consumes:
+      - application/json
+      description: Mark a surgery as completed with post-operative notes
+      parameters:
+      - description: Surgery ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Completion details
+        in: body
+        name: body
+        required: true
+        schema:
+          properties:
+            complications:
+              type: string
+            post_op_notes:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Surgery completed successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Complete a surgery
+      tags:
+      - Surgeries
+  /surgeries/{id}/start:
+    post:
+      description: Mark a surgery as in progress
+      parameters:
+      - description: Surgery ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Surgery started successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid surgery ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Start a surgery
+      tags:
+      - Surgeries
+  /surgeries/scheduled:
+    get:
+      description: Get all scheduled surgeries within a specified date range
+      parameters:
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: start_date
+        required: true
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: end_date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of scheduled surgeries
+          schema:
+            items:
+              $ref: '#/definitions/domain.Surgery'
+            type: array
+        "400":
+          description: Invalid date format or missing parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get scheduled surgeries
+      tags:
+      - Surgeries
+  /surgeries/status:
+    get:
+      description: Get all surgeries filtered by status
+      parameters:
+      - description: Surgery status (scheduled, in_progress, completed, cancelled)
+        in: query
+        name: status
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of surgeries with the specified status
+          schema:
+            items:
+              $ref: '#/definitions/domain.Surgery'
+            type: array
+        "400":
+          description: Status parameter is required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get surgeries by status
+      tags:
+      - Surgeries
+  /treatments:
+    get:
+      description: Get a list of all available treatments
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of treatments
+          schema:
+            items:
+              $ref: '#/definitions/domain.Treatment'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all treatments
+      tags:
+      - Treatments
+    post:
+      consumes:
+      - application/json
+      description: Add a new treatment to the system
+      parameters:
+      - description: Treatment details
+        in: body
+        name: treatment
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Treatment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Treatment created successfully
+          schema:
+            $ref: '#/definitions/domain.Treatment'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new treatment
+      tags:
+      - Treatments
+  /treatments/{id}:
+    delete:
+      description: Remove a treatment from the system
+      parameters:
+      - description: Treatment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Treatment deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid treatment ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Treatment not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete treatment by ID
+      tags:
+      - Treatments
+    get:
+      description: Get detailed information about a specific treatment
+      parameters:
+      - description: Treatment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Treatment details
+          schema:
+            $ref: '#/definitions/domain.Treatment'
+        "400":
+          description: Invalid treatment ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Treatment not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get treatment by ID
+      tags:
+      - Treatments
+    put:
+      consumes:
+      - application/json
+      description: Update information for a specific treatment
+      parameters:
+      - description: Treatment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Treatment details
+        in: body
+        name: treatment
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Treatment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Treatment updated successfully
+          schema:
+            $ref: '#/definitions/domain.Treatment'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Treatment not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update treatment by ID
+      tags:
+      - Treatments
+  /vaccinations:
+    get:
+      description: Get a list of all vaccinations
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of vaccinations
+          schema:
+            items:
+              $ref: '#/definitions/domain.Vaccination'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all vaccinations
+      tags:
+      - Vaccinations
+    post:
+      consumes:
+      - application/json
+      description: Schedule a new vaccination for a pet
+      parameters:
+      - description: Vaccination details
+        in: body
+        name: vaccination
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Vaccination'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Vaccination created successfully
+          schema:
+            $ref: '#/definitions/domain.Vaccination'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new vaccination
+      tags:
+      - Vaccinations
+  /vaccinations/{id}:
+    delete:
+      description: Remove a vaccination from the system
+      parameters:
+      - description: Vaccination ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Vaccination deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid vaccination ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete vaccination by ID
+      tags:
+      - Vaccinations
+    get:
+      description: Get detailed information about a specific vaccination
+      parameters:
+      - description: Vaccination ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Vaccination details
+          schema:
+            $ref: '#/definitions/domain.Vaccination'
+        "400":
+          description: Invalid vaccination ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Vaccination not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get vaccination by ID
+      tags:
+      - Vaccinations
+    put:
+      consumes:
+      - application/json
+      description: Update information for a specific vaccination
+      parameters:
+      - description: Vaccination ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Vaccination details
+        in: body
+        name: vaccination
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Vaccination'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Vaccination updated successfully
+          schema:
+            $ref: '#/definitions/domain.Vaccination'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update vaccination by ID
+      tags:
+      - Vaccinations
+  /vaccinations/{id}/complete:
+    post:
+      consumes:
+      - application/json
+      description: Mark a vaccination as completed with veterinarian details
+      parameters:
+      - description: Vaccination ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Completion details
+        in: body
+        name: body
+        required: true
+        schema:
+          properties:
+            side_effects:
+              type: string
+            veterinarian_id:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Vaccination completed successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Complete a vaccination
+      tags:
+      - Vaccinations
+  /vaccinations/due:
+    get:
+      description: Get all vaccinations that are due within a specified number of
+        days
+      parameters:
+      - description: Number of days to look ahead (default 30)
+        in: query
+        name: days
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of due vaccinations
+          schema:
+            items:
+              $ref: '#/definitions/domain.Vaccination'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get due vaccinations
+      tags:
+      - Vaccinations
+  /vaccinations/overdue:
+    get:
+      description: Get all vaccinations that are overdue
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of overdue vaccinations
+          schema:
+            items:
+              $ref: '#/definitions/domain.Vaccination'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get overdue vaccinations
+      tags:
+      - Vaccinations
+  /veterinarians:
+    get:
+      description: Get a list of all veterinarians in the clinic
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of veterinarians
+          schema:
+            items:
+              $ref: '#/definitions/domain.Veterinarian'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all veterinarians
+      tags:
+      - Veterinarians
+    post:
+      consumes:
+      - application/json
+      description: Add a new veterinarian to the clinic
+      parameters:
+      - description: Veterinarian details
+        in: body
+        name: veterinarian
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Veterinarian'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Veterinarian created successfully
+          schema:
+            $ref: '#/definitions/domain.Veterinarian'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new veterinarian
+      tags:
+      - Veterinarians
+  /veterinarians/{id}:
+    delete:
+      description: Remove a veterinarian from the system
+      parameters:
+      - description: Veterinarian ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Veterinarian deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid veterinarian ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Veterinarian not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete veterinarian by ID
+      tags:
+      - Veterinarians
+    get:
+      description: Get detailed information about a specific veterinarian
+      parameters:
+      - description: Veterinarian ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Veterinarian details
+          schema:
+            $ref: '#/definitions/domain.Veterinarian'
+        "400":
+          description: Invalid veterinarian ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get veterinarian by ID
+      tags:
+      - Veterinarians
+    put:
+      consumes:
+      - application/json
+      description: Update information for a specific veterinarian
+      parameters:
+      - description: Veterinarian ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Veterinarian details
+        in: body
+        name: veterinarian
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Veterinarian'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Veterinarian updated successfully
+          schema:
+            $ref: '#/definitions/domain.Veterinarian'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Veterinarian not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update veterinarian by ID
+      tags:
+      - Veterinarians
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token.
