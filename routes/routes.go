@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"net/http"
 	"os"
 
 	"go-vet/application"
@@ -38,6 +39,16 @@ func SetupRouter(db *database.DB) *gin.Engine {
 	// Swagger documentation route
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	// Health check endpoint
+	r.GET("/healthz", func(c *gin.Context) {
+		sqlDB, err := db.DB.DB()
+		if err != nil || sqlDB.Ping() != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "database unavailable"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"status": "success", "message": "OK"})
+	})
+
 	// Public auth routes
 	setupAuthRoutes(r, db)
 
@@ -53,6 +64,17 @@ func SetupRouter(db *database.DB) *gin.Engine {
 	authorized.Use(middlewares.AuthMiddleware())
 	authorized.Use(middlewares.AuditMiddleware(db))
 	{
+		// Metrics endpoint
+		authorized.GET("/metrics", middlewares.RoleAuthMiddleware("admin"), func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{
+				"status": "success",
+				"data": gin.H{
+					"total_requests": middlewares.GetTotalRequests(),
+					"total_errors":   middlewares.GetTotalErrors(),
+				},
+			})
+		})
+
 		setupAppointmentRoutes(authorized, db)
 		setupClientRoutes(authorized, db)
 		setupPetRoutes(authorized, db)
@@ -89,11 +111,11 @@ func setupAppointmentRoutes(r *gin.RouterGroup, db *database.DB) {
 
 	appointments := r.Group("/appointments")
 	{
-		appointments.GET("", appointmentController.FindAppointments)
-		appointments.GET("/:id", appointmentController.FindAppointment)
-		appointments.POST("", appointmentController.CreateAppointment)
-		appointments.PUT("/:id", appointmentController.UpdateAppointment)
-		appointments.DELETE("/:id", appointmentController.DeleteAppointment)
+		appointments.GET("", middlewares.RoleAuthMiddleware("admin", "veterinarian"), appointmentController.FindAppointments)
+		appointments.GET("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), appointmentController.FindAppointment)
+		appointments.POST("", middlewares.RoleAuthMiddleware("admin", "veterinarian"), appointmentController.CreateAppointment)
+		appointments.PUT("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), appointmentController.UpdateAppointment)
+		appointments.DELETE("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), appointmentController.DeleteAppointment)
 	}
 }
 
@@ -104,11 +126,11 @@ func setupClientRoutes(r *gin.RouterGroup, db *database.DB) {
 
 	clients := r.Group("/clients")
 	{
-		clients.GET("", clientController.FindClients)
-		clients.GET("/:id", clientController.FindClient)
-		clients.POST("", clientController.CreateClient)
-		clients.PUT("/:id", clientController.UpdateClient)
-		clients.DELETE("/:id", clientController.DeleteClient)
+		clients.GET("", middlewares.RoleAuthMiddleware("admin", "veterinarian"), clientController.FindClients)
+		clients.GET("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), clientController.FindClient)
+		clients.POST("", middlewares.RoleAuthMiddleware("admin", "veterinarian"), clientController.CreateClient)
+		clients.PUT("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), clientController.UpdateClient)
+		clients.DELETE("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), clientController.DeleteClient)
 	}
 }
 
@@ -139,18 +161,18 @@ func setupPetRoutes(r *gin.RouterGroup, db *database.DB) {
 
 	pets := r.Group("/pets")
 	{
-		pets.GET("", petController.FindPets)
-		pets.GET("/:id", petController.FindPet)
-		pets.POST("", petController.CreatePet)
-		pets.PUT("/:id", petController.UpdatePet)
-		pets.DELETE("/:id", petController.DeletePet)
+		pets.GET("", middlewares.RoleAuthMiddleware("admin", "veterinarian", "user"), petController.FindPets)
+		pets.GET("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian", "user"), petController.FindPet)
+		pets.POST("", middlewares.RoleAuthMiddleware("admin", "veterinarian"), petController.CreatePet)
+		pets.PUT("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), petController.UpdatePet)
+		pets.DELETE("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), petController.DeletePet)
 
 		// Nested resources - using :id for consistency
-		pets.GET("/:id/medical-records", medicalRecordController.GetMedicalRecordsByPet)
-		pets.GET("/:id/vaccinations", vaccinationController.GetVaccinationsByPet)
-		pets.GET("/:id/surgeries", surgeryController.GetSurgeriesByPet)
-		pets.GET("/:id/allergies", allergyController.GetAllergiesByPet)
-		pets.GET("/:id/allergies/active", allergyController.GetActiveAllergiesByPet)
+		pets.GET("/:id/medical-records", middlewares.RoleAuthMiddleware("admin", "veterinarian"), medicalRecordController.GetMedicalRecordsByPet)
+		pets.GET("/:id/vaccinations", middlewares.RoleAuthMiddleware("admin", "veterinarian", "user"), vaccinationController.GetVaccinationsByPet)
+		pets.GET("/:id/surgeries", middlewares.RoleAuthMiddleware("admin", "veterinarian"), surgeryController.GetSurgeriesByPet)
+		pets.GET("/:id/allergies", middlewares.RoleAuthMiddleware("admin", "veterinarian", "user"), allergyController.GetAllergiesByPet)
+		pets.GET("/:id/allergies/active", middlewares.RoleAuthMiddleware("admin", "veterinarian", "user"), allergyController.GetActiveAllergiesByPet)
 	}
 }
 
@@ -161,11 +183,11 @@ func setupVeterinarianRoutes(r *gin.RouterGroup, db *database.DB) {
 
 	veterinarians := r.Group("/veterinarians")
 	{
-		veterinarians.GET("", veterinarianController.FindVeterinarians)
-		veterinarians.GET("/:id", veterinarianController.FindVeterinarian)
-		veterinarians.POST("", veterinarianController.CreateVeterinarian)
-		veterinarians.PUT("/:id", veterinarianController.UpdateVeterinarian)
-		veterinarians.DELETE("/:id", veterinarianController.DeleteVeterinarian)
+		veterinarians.GET("", middlewares.RoleAuthMiddleware("admin", "veterinarian", "user"), veterinarianController.FindVeterinarians)
+		veterinarians.GET("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian", "user"), veterinarianController.FindVeterinarian)
+		veterinarians.POST("", middlewares.RoleAuthMiddleware("admin"), veterinarianController.CreateVeterinarian)
+		veterinarians.PUT("/:id", middlewares.RoleAuthMiddleware("admin"), veterinarianController.UpdateVeterinarian)
+		veterinarians.DELETE("/:id", middlewares.RoleAuthMiddleware("admin"), veterinarianController.DeleteVeterinarian)
 	}
 }
 
@@ -176,11 +198,11 @@ func setupTreatmentRoutes(r *gin.RouterGroup, db *database.DB) {
 
 	treatments := r.Group("/treatments")
 	{
-		treatments.GET("", treatmentController.FindTreatments)
-		treatments.GET("/:id", treatmentController.FindTreatment)
-		treatments.POST("", treatmentController.CreateTreatment)
-		treatments.PUT("/:id", treatmentController.UpdateTreatment)
-		treatments.DELETE("/:id", treatmentController.DeleteTreatment)
+		treatments.GET("", middlewares.RoleAuthMiddleware("admin", "veterinarian", "user"), treatmentController.FindTreatments)
+		treatments.GET("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian", "user"), treatmentController.FindTreatment)
+		treatments.POST("", middlewares.RoleAuthMiddleware("admin", "veterinarian"), treatmentController.CreateTreatment)
+		treatments.PUT("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), treatmentController.UpdateTreatment)
+		treatments.DELETE("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), treatmentController.DeleteTreatment)
 	}
 }
 
@@ -191,11 +213,11 @@ func setupInvoiceRoutes(r *gin.RouterGroup, db *database.DB) {
 
 	invoices := r.Group("/invoices")
 	{
-		invoices.GET("", invoiceController.FindInvoices)
-		invoices.GET("/:id", invoiceController.FindInvoice)
-		invoices.POST("", invoiceController.CreateInvoice)
-		invoices.PUT("/:id", invoiceController.UpdateInvoice)
-		invoices.DELETE("/:id", invoiceController.DeleteInvoice)
+		invoices.GET("", middlewares.RoleAuthMiddleware("admin", "veterinarian"), invoiceController.FindInvoices)
+		invoices.GET("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), invoiceController.FindInvoice)
+		invoices.POST("", middlewares.RoleAuthMiddleware("admin"), invoiceController.CreateInvoice)
+		invoices.PUT("/:id", middlewares.RoleAuthMiddleware("admin"), invoiceController.UpdateInvoice)
+		invoices.DELETE("/:id", middlewares.RoleAuthMiddleware("admin"), invoiceController.DeleteInvoice)
 	}
 }
 
@@ -206,11 +228,11 @@ func setupMedicationRoutes(r *gin.RouterGroup, db *database.DB) {
 
 	medications := r.Group("/medications")
 	{
-		medications.GET("", medicationController.FindMedications)
-		medications.GET("/:id", medicationController.FindMedication)
-		medications.POST("", medicationController.CreateMedication)
-		medications.PUT("/:id", medicationController.UpdateMedication)
-		medications.DELETE("/:id", medicationController.DeleteMedication)
+		medications.GET("", middlewares.RoleAuthMiddleware("admin", "veterinarian", "user"), medicationController.FindMedications)
+		medications.GET("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian", "user"), medicationController.FindMedication)
+		medications.POST("", middlewares.RoleAuthMiddleware("admin", "veterinarian"), medicationController.CreateMedication)
+		medications.PUT("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), medicationController.UpdateMedication)
+		medications.DELETE("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), medicationController.DeleteMedication)
 	}
 }
 
@@ -221,11 +243,11 @@ func setupMedicalRecordRoutes(r *gin.RouterGroup, db *database.DB) {
 
 	medicalRecords := r.Group("/medical-records")
 	{
-		medicalRecords.GET("", medicalRecordController.GetMedicalRecords)
-		medicalRecords.GET("/:id", medicalRecordController.GetMedicalRecord)
-		medicalRecords.POST("", medicalRecordController.CreateMedicalRecord)
-		medicalRecords.PUT("/:id", medicalRecordController.UpdateMedicalRecord)
-		medicalRecords.DELETE("/:id", medicalRecordController.DeleteMedicalRecord)
+		medicalRecords.GET("", middlewares.RoleAuthMiddleware("admin", "veterinarian"), medicalRecordController.GetMedicalRecords)
+		medicalRecords.GET("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), medicalRecordController.GetMedicalRecord)
+		medicalRecords.POST("", middlewares.RoleAuthMiddleware("admin", "veterinarian"), medicalRecordController.CreateMedicalRecord)
+		medicalRecords.PUT("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), medicalRecordController.UpdateMedicalRecord)
+		medicalRecords.DELETE("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), medicalRecordController.DeleteMedicalRecord)
 	}
 }
 
@@ -236,14 +258,14 @@ func setupVaccinationRoutes(r *gin.RouterGroup, db *database.DB) {
 
 	vaccinations := r.Group("/vaccinations")
 	{
-		vaccinations.GET("", vaccinationController.GetVaccinations)
-		vaccinations.GET("/:id", vaccinationController.GetVaccination)
-		vaccinations.GET("/due", vaccinationController.GetDueVaccinations)
-		vaccinations.GET("/overdue", vaccinationController.GetOverdueVaccinations)
-		vaccinations.POST("", vaccinationController.CreateVaccination)
-		vaccinations.PUT("/:id", vaccinationController.UpdateVaccination)
-		vaccinations.PATCH("/:id/complete", vaccinationController.CompleteVaccination)
-		vaccinations.DELETE("/:id", vaccinationController.DeleteVaccination)
+		vaccinations.GET("", middlewares.RoleAuthMiddleware("admin", "veterinarian"), vaccinationController.GetVaccinations)
+		vaccinations.GET("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), vaccinationController.GetVaccination)
+		vaccinations.GET("/due", middlewares.RoleAuthMiddleware("admin", "veterinarian"), vaccinationController.GetDueVaccinations)
+		vaccinations.GET("/overdue", middlewares.RoleAuthMiddleware("admin", "veterinarian"), vaccinationController.GetOverdueVaccinations)
+		vaccinations.POST("", middlewares.RoleAuthMiddleware("admin", "veterinarian"), vaccinationController.CreateVaccination)
+		vaccinations.PUT("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), vaccinationController.UpdateVaccination)
+		vaccinations.PATCH("/:id/complete", middlewares.RoleAuthMiddleware("admin", "veterinarian"), vaccinationController.CompleteVaccination)
+		vaccinations.DELETE("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), vaccinationController.DeleteVaccination)
 	}
 }
 
@@ -254,16 +276,16 @@ func setupSurgeryRoutes(r *gin.RouterGroup, db *database.DB) {
 
 	surgeries := r.Group("/surgeries")
 	{
-		surgeries.GET("", surgeryController.GetSurgeries)
-		surgeries.GET("/:id", surgeryController.GetSurgery)
-		surgeries.GET("/status", surgeryController.GetSurgeriesByStatus)
-		surgeries.GET("/scheduled", surgeryController.GetScheduledSurgeries)
-		surgeries.POST("", surgeryController.CreateSurgery)
-		surgeries.PUT("/:id", surgeryController.UpdateSurgery)
-		surgeries.PATCH("/:id/start", surgeryController.StartSurgery)
-		surgeries.PATCH("/:id/complete", surgeryController.CompleteSurgery)
-		surgeries.PATCH("/:id/cancel", surgeryController.CancelSurgery)
-		surgeries.DELETE("/:id", surgeryController.DeleteSurgery)
+		surgeries.GET("", middlewares.RoleAuthMiddleware("admin", "veterinarian"), surgeryController.GetSurgeries)
+		surgeries.GET("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), surgeryController.GetSurgery)
+		surgeries.GET("/status", middlewares.RoleAuthMiddleware("admin", "veterinarian"), surgeryController.GetSurgeriesByStatus)
+		surgeries.GET("/scheduled", middlewares.RoleAuthMiddleware("admin", "veterinarian"), surgeryController.GetScheduledSurgeries)
+		surgeries.POST("", middlewares.RoleAuthMiddleware("admin", "veterinarian"), surgeryController.CreateSurgery)
+		surgeries.PUT("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), surgeryController.UpdateSurgery)
+		surgeries.PATCH("/:id/start", middlewares.RoleAuthMiddleware("admin", "veterinarian"), surgeryController.StartSurgery)
+		surgeries.PATCH("/:id/complete", middlewares.RoleAuthMiddleware("admin", "veterinarian"), surgeryController.CompleteSurgery)
+		surgeries.PATCH("/:id/cancel", middlewares.RoleAuthMiddleware("admin", "veterinarian"), surgeryController.CancelSurgery)
+		surgeries.DELETE("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), surgeryController.DeleteSurgery)
 	}
 }
 
@@ -274,13 +296,13 @@ func setupAllergyRoutes(r *gin.RouterGroup, db *database.DB) {
 
 	allergies := r.Group("/allergies")
 	{
-		allergies.GET("", allergyController.GetAllergies)
-		allergies.GET("/:id", allergyController.GetAllergy)
-		allergies.GET("/severity", allergyController.GetAllergiesBySeverity)
-		allergies.POST("", allergyController.CreateAllergy)
-		allergies.PUT("/:id", allergyController.UpdateAllergy)
-		allergies.PATCH("/:id/deactivate", allergyController.DeactivateAllergy)
-		allergies.PATCH("/:id/reactivate", allergyController.ReactivateAllergy)
-		allergies.DELETE("/:id", allergyController.DeleteAllergy)
+		allergies.GET("", middlewares.RoleAuthMiddleware("admin", "veterinarian", "user"), allergyController.GetAllergies)
+		allergies.GET("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian", "user"), allergyController.GetAllergy)
+		allergies.GET("/severity", middlewares.RoleAuthMiddleware("admin", "veterinarian", "user"), allergyController.GetAllergiesBySeverity)
+		allergies.POST("", middlewares.RoleAuthMiddleware("admin", "veterinarian"), allergyController.CreateAllergy)
+		allergies.PUT("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), allergyController.UpdateAllergy)
+		allergies.PATCH("/:id/deactivate", middlewares.RoleAuthMiddleware("admin", "veterinarian"), allergyController.DeactivateAllergy)
+		allergies.PATCH("/:id/reactivate", middlewares.RoleAuthMiddleware("admin", "veterinarian"), allergyController.ReactivateAllergy)
+		allergies.DELETE("/:id", middlewares.RoleAuthMiddleware("admin", "veterinarian"), allergyController.DeleteAllergy)
 	}
 }

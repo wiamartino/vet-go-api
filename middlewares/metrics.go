@@ -37,3 +37,11 @@ func MetricsMiddleware() gin.HandlerFunc {
 		}).Info("Request metrics")
 	}
 }
+
+func GetTotalRequests() int64 {
+	return atomic.LoadInt64(&totalRequests)
+}
+
+func GetTotalErrors() int64 {
+	return atomic.LoadInt64(&totalErrors)
+}

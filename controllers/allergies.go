@@ -31,7 +31,7 @@ func NewAllergyController(service *application.AllergyService) *AllergyControlle
 func (c *AllergyController) GetAllergies(ctx *gin.Context) {
 	allergies, err := c.service.GetAllAllergies()
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 	utils.RespondWithSuccess(ctx, http.StatusOK, allergies)
@@ -52,13 +52,13 @@ func (c *AllergyController) GetAllergies(ctx *gin.Context) {
 func (c *AllergyController) GetAllergy(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid allergy ID"))
 		return
 	}
 
 	allergy, err := c.service.GetAllergyByID(uint(id))
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusNotFound, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewNotFoundError("Allergy"))
 		return
 	}
 
@@ -80,13 +80,13 @@ func (c *AllergyController) GetAllergy(ctx *gin.Context) {
 func (c *AllergyController) GetAllergiesByPet(ctx *gin.Context) {
 	petID, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid pet ID"))
 		return
 	}
 
 	allergies, err := c.service.GetAllergiesByPetID(uint(petID))
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
@@ -108,13 +108,13 @@ func (c *AllergyController) GetAllergiesByPet(ctx *gin.Context) {
 func (c *AllergyController) GetActiveAllergiesByPet(ctx *gin.Context) {
 	petID, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid pet ID"))
 		return
 	}
 
 	allergies, err := c.service.GetActiveAllergiesByPetID(uint(petID))
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
@@ -136,14 +136,14 @@ func (c *AllergyController) GetActiveAllergiesByPet(ctx *gin.Context) {
 func (c *AllergyController) GetAllergiesBySeverity(ctx *gin.Context) {
 	severityStr := ctx.Query("severity")
 	if severityStr == "" {
-		utils.RespondWithError(ctx, http.StatusBadRequest, "Severity parameter is required")
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Severity parameter is required"))
 		return
 	}
 
 	severity := domain.AllergySeverity(severityStr)
 	allergies, err := c.service.GetAllergiesBySeverity(severity)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
@@ -166,16 +166,27 @@ func (c *AllergyController) GetAllergiesBySeverity(ctx *gin.Context) {
 func (c *AllergyController) CreateAllergy(ctx *gin.Context) {
 	var allergy domain.Allergy
 	if err := ctx.ShouldBindJSON(&allergy); err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithError(ctx, http.StatusBadRequest, "Invalid request format: "+err.Error())
+		return
+	}
+
+	validator := utils.NewValidator()
+	validator.ValidateNumericID("pet_id", allergy.PetID)
+	validator.ValidateRequired("allergen", allergy.Allergen)
+	validator.ValidateInSlice("allergy_type", string(allergy.AllergyType), []string{"food", "medication", "environment", "insect", "other"})
+	validator.ValidateInSlice("severity", string(allergy.Severity), []string{"mild", "moderate", "severe", "fatal"})
+
+	if !validator.IsValid() {
+		utils.RespondWithValidationError(ctx, validator.Errors)
 		return
 	}
 
 	if err := c.service.CreateAllergy(&allergy); err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
-	utils.RespondWithSuccess(ctx, http.StatusCreated, allergy)
+	utils.RespondWithCreated(ctx, allergy)
 }
 
 // UpdateAllergy updates an allergy by ID
@@ -195,19 +206,36 @@ func (c *AllergyController) CreateAllergy(ctx *gin.Context) {
 func (c *AllergyController) UpdateAllergy(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid allergy ID"))
+		return
+	}
+
+	// Check if allergy exists
+	if _, err := c.service.GetAllergyByID(uint(id)); err != nil {
+		utils.RespondWithAppError(ctx, utils.NewNotFoundError("Allergy"))
 		return
 	}
 
 	var allergy domain.Allergy
 	if err := ctx.ShouldBindJSON(&allergy); err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithError(ctx, http.StatusBadRequest, "Invalid request format: "+err.Error())
+		return
+	}
+
+	validator := utils.NewValidator()
+	validator.ValidateNumericID("pet_id", allergy.PetID)
+	validator.ValidateRequired("allergen", allergy.Allergen)
+	validator.ValidateInSlice("allergy_type", string(allergy.AllergyType), []string{"food", "medication", "environment", "insect", "other"})
+	validator.ValidateInSlice("severity", string(allergy.Severity), []string{"mild", "moderate", "severe", "fatal"})
+
+	if !validator.IsValid() {
+		utils.RespondWithValidationError(ctx, validator.Errors)
 		return
 	}
 
 	allergy.AllergyID = uint(id)
 	if err := c.service.UpdateAllergy(&allergy); err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
@@ -225,16 +253,21 @@ func (c *AllergyController) UpdateAllergy(ctx *gin.Context) {
 // @Failure 400 {object} map[string]string "Invalid allergy ID"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 500 {object} map[string]string "Internal server error"
-// @Router /allergies/{id}/deactivate [post]
+// @Router /allergies/{id}/deactivate [patch]
 func (c *AllergyController) DeactivateAllergy(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid allergy ID"))
+		return
+	}
+
+	if _, err := c.service.GetAllergyByID(uint(id)); err != nil {
+		utils.RespondWithAppError(ctx, utils.NewNotFoundError("Allergy"))
 		return
 	}
 
 	if err := c.service.DeactivateAllergy(uint(id)); err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
@@ -252,16 +285,21 @@ func (c *AllergyController) DeactivateAllergy(ctx *gin.Context) {
 // @Failure 400 {object} map[string]string "Invalid allergy ID"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 500 {object} map[string]string "Internal server error"
-// @Router /allergies/{id}/reactivate [post]
+// @Router /allergies/{id}/reactivate [patch]
 func (c *AllergyController) ReactivateAllergy(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid allergy ID"))
+		return
+	}
+
+	if _, err := c.service.GetAllergyByID(uint(id)); err != nil {
+		utils.RespondWithAppError(ctx, utils.NewNotFoundError("Allergy"))
 		return
 	}
 
 	if err := c.service.ReactivateAllergy(uint(id)); err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
@@ -275,7 +313,7 @@ func (c *AllergyController) ReactivateAllergy(ctx *gin.Context) {
 // @Security BearerAuth
 // @Produce json
 // @Param id path int true "Allergy ID"
-// @Success 200 {object} map[string]string "Allergy deleted successfully"
+// @Success 204 "Allergy deleted successfully"
 // @Failure 400 {object} map[string]string "Invalid allergy ID"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 500 {object} map[string]string "Internal server error"
@@ -283,14 +321,19 @@ func (c *AllergyController) ReactivateAllergy(ctx *gin.Context) {
 func (c *AllergyController) DeleteAllergy(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid allergy ID"))
+		return
+	}
+
+	if _, err := c.service.GetAllergyByID(uint(id)); err != nil {
+		utils.RespondWithAppError(ctx, utils.NewNotFoundError("Allergy"))
 		return
 	}
 
 	if err := c.service.DeleteAllergy(uint(id)); err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
-	utils.RespondWithSuccess(ctx, http.StatusOK, gin.H{"message": "Allergy deleted successfully"})
+	utils.RespondWithNoContent(ctx)
 }

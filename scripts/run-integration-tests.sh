@@ -84,7 +84,7 @@ run_tests() {
     export DB_USER=postgres
     export DB_PASSWORD=postgres
     export DB_NAME=vet_go_test
-    export DB_PORT=5432
+    export DB_PORT=5433
     export DB_SSLMODE=disable
     export DB_TIMEZONE=UTC
     export JWT_SECRET_KEY=test_secret_key_for_integration_testing

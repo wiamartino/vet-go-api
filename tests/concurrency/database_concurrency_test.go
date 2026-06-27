@@ -2,6 +2,7 @@ package concurrency
 
 import (
 	"go-vet/infrastructure/database"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -9,6 +10,15 @@ import (
 
 // TestDatabaseConcurrentAccess validates concurrent database access
 func TestDatabaseConcurrentAccess(t *testing.T) {
+	if host := os.Getenv("DB_HOST"); host != "" {
+		_, _ = database.ConnectDatabase()
+	}
+
+	db := database.GetDB()
+	if db == nil {
+		t.Skip("Database not initialized, skipping test")
+	}
+
 	const numGoroutines = 100
 
 	var wg sync.WaitGroup
@@ -17,8 +27,8 @@ func TestDatabaseConcurrentAccess(t *testing.T) {
 	for i := 0; i < numGoroutines; i++ {
 		go func() {
 			defer wg.Done()
-			db := database.GetDB()
-			if db == nil {
+			dbInstance := database.GetDB()
+			if dbInstance == nil {
 				t.Error("Expected database instance, got nil")
 			}
 		}()

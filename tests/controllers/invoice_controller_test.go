@@ -92,7 +92,7 @@ func TestInvoiceController(t *testing.T) {
 		router.POST("/invoices", invoiceController.CreateInvoice)
 
 		// Use explicit JSON; current handler validation may reject
-		jsonBody := `{"client_id":1,"appointment_id":1,"total":300.00}`
+		jsonBody := `{"client_id":1,"appointment_id":1}`
 
 		// Act
 		req, _ := http.NewRequest("POST", "/invoices", bytes.NewBufferString(jsonBody))
@@ -240,7 +240,7 @@ func TestInvoiceController(t *testing.T) {
 			InvoiceID:     1,
 			ClientID:      1,
 			AppointmentID: 1,
-			Total:         400.00,
+			Total:         -5.00,
 			Date:          time.Now(),
 		}
 

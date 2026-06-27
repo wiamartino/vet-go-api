@@ -168,7 +168,7 @@ func (suite *IntegrationTestSuite) TestClientAndPetManagementFlow() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, req)
 
-	suite.Equal(http.StatusOK, w.Code, "Client creation should succeed")
+	suite.Equal(http.StatusCreated, w.Code, "Client creation should succeed")
 
 	var clientResponse map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &clientResponse)
@@ -198,7 +198,7 @@ func (suite *IntegrationTestSuite) TestClientAndPetManagementFlow() {
 	w = httptest.NewRecorder()
 	suite.router.ServeHTTP(w, req)
 
-	suite.Equal(http.StatusOK, w.Code, "Pet creation should succeed")
+	suite.Equal(http.StatusCreated, w.Code, "Pet creation should succeed")
 
 	var petResponse map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &petResponse)
@@ -281,11 +281,11 @@ func (suite *IntegrationTestSuite) TestVeterinarianAndAppointmentFlow() {
 
 	// Step 3: Book an appointment
 	appointmentData := map[string]interface{}{
-		"pet_id":           petID,
-		"veterinarian_id":  vetID,
-		"appointment_date": time.Now().AddDate(0, 0, 7).Format("2006-01-02T15:04:05Z07:00"),
-		"reason":           "Annual checkup",
-		"status":           "scheduled",
+		"pet_id":                 petID,
+		"veterinarian_id":        vetID,
+		"appointment_date":       time.Now().AddDate(0, 0, 7).Format("2006-01-02T15:04:05Z07:00"),
+		"reason_for_appointment": "Annual checkup",
+		"status":                 "scheduled",
 	}
 
 	jsonData, _ = json.Marshal(appointmentData)
@@ -295,7 +295,7 @@ func (suite *IntegrationTestSuite) TestVeterinarianAndAppointmentFlow() {
 	w = httptest.NewRecorder()
 	suite.router.ServeHTTP(w, req)
 
-	suite.Equal(http.StatusOK, w.Code, "Appointment creation should succeed")
+	suite.Equal(http.StatusCreated, w.Code, "Appointment creation should succeed")
 
 	var appointmentResponse map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &appointmentResponse)
@@ -457,11 +457,11 @@ func (suite *IntegrationTestSuite) TestInvoiceManagementFlow() {
 
 	// Create appointment
 	appointmentData := map[string]interface{}{
-		"pet_id":           petID,
-		"veterinarian_id":  vetID,
-		"appointment_date": time.Now().AddDate(0, 0, 1).Format("2006-01-02T15:04:05Z07:00"),
-		"reason":           "Checkup for invoice",
-		"status":           "completed",
+		"pet_id":                 petID,
+		"veterinarian_id":        vetID,
+		"appointment_date":       time.Now().AddDate(0, 0, 1).Format("2006-01-02T15:04:05Z07:00"),
+		"reason_for_appointment": "Checkup for invoice",
+		"status":                 "completed",
 	}
 
 	jsonData, _ = json.Marshal(appointmentData)
@@ -470,6 +470,8 @@ func (suite *IntegrationTestSuite) TestInvoiceManagementFlow() {
 	req.Header.Set("Authorization", "Bearer "+token)
 	w = httptest.NewRecorder()
 	suite.router.ServeHTTP(w, req)
+
+	suite.Equal(http.StatusCreated, w.Code, "Appointment creation should succeed")
 
 	var appointmentResponse map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &appointmentResponse)
@@ -547,6 +549,8 @@ func (suite *IntegrationTestSuite) TestErrorHandlingAndEdgeCases() {
 		"first_name": "Test",
 		"last_name":  "Client",
 		"email":      fmt.Sprintf("minimal%d@test.com", time.Now().UnixNano()),
+		"phone":      "+1234567890",
+		"address":    "123 Test Street",
 	}
 
 	jsonData, _ := json.Marshal(minimalClientData)
@@ -556,7 +560,7 @@ func (suite *IntegrationTestSuite) TestErrorHandlingAndEdgeCases() {
 	w = httptest.NewRecorder()
 	suite.router.ServeHTTP(w, req)
 
-	suite.Equal(http.StatusOK, w.Code, "Should succeed with minimal valid client data")
+	suite.Equal(http.StatusCreated, w.Code, "Should succeed with minimal valid client data")
 
 	// Test 3: Access without authentication
 	req, _ = http.NewRequest("GET", "/api/v1/clients", nil)

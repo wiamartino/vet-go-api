@@ -7,11 +7,11 @@ import (
 type Invoice struct {
 	InvoiceID     uint        `gorm:"primaryKey" json:"invoice_id"`
 	Date          time.Time   `json:"date"`
-	Total         float64     `json:"total"`
-	ClientID      uint        `json:"client_id"`
-	AppointmentID uint        `json:"appointment_id"`
-	Client        Client      //`gorm:"foreignKey:ClientID"`
-	Appointment   Appointment //`gorm:"foreignKey:AppointmentID"`
+	Total         float64      `json:"total" binding:"required,gt=0"`
+	ClientID      uint         `json:"client_id" binding:"required"`
+	AppointmentID uint         `json:"appointment_id" binding:"required"`
+	Client        *Client      `json:"client,omitempty"`
+	Appointment   *Appointment `json:"appointment,omitempty"`
 }
 
 type InvoiceRepository interface {

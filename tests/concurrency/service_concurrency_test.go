@@ -7,11 +7,14 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/mock"
 )
 
 // TestAllergyServiceConcurrentValidation tests concurrent allergy validation
 func TestAllergyServiceConcurrentValidation(t *testing.T) {
 	mockRepo := new(mocks.MockAllergyRepository)
+	mockRepo.On("Create", mock.Anything).Return(nil)
 	service := application.NewAllergyService(mockRepo)
 
 	const numGoroutines = 100
@@ -54,6 +57,7 @@ func TestAllergyServiceConcurrentValidation(t *testing.T) {
 func TestConcurrentServiceOperations(t *testing.T) {
 	// Setup mocks
 	mockAllergyRepo := new(mocks.MockAllergyRepository)
+	mockAllergyRepo.On("Create", mock.Anything).Return(nil)
 
 	allergyService := application.NewAllergyService(mockAllergyRepo)
 
@@ -87,6 +91,7 @@ func TestServiceValidationStressTest(t *testing.T) {
 	}
 
 	mockRepo := new(mocks.MockAllergyRepository)
+	mockRepo.On("Create", mock.Anything).Return(nil)
 	service := application.NewAllergyService(mockRepo)
 
 	const numGoroutines = 200

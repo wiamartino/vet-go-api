@@ -32,7 +32,7 @@ func NewSurgeryController(service *application.SurgeryService) *SurgeryControlle
 func (c *SurgeryController) GetSurgeries(ctx *gin.Context) {
 	surgeries, err := c.service.GetAllSurgeries()
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 	utils.RespondWithSuccess(ctx, http.StatusOK, surgeries)
@@ -53,13 +53,13 @@ func (c *SurgeryController) GetSurgeries(ctx *gin.Context) {
 func (c *SurgeryController) GetSurgery(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid surgery ID"))
 		return
 	}
 
 	surgery, err := c.service.GetSurgeryByID(uint(id))
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusNotFound, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewNotFoundError("Surgery"))
 		return
 	}
 
@@ -81,13 +81,13 @@ func (c *SurgeryController) GetSurgery(ctx *gin.Context) {
 func (c *SurgeryController) GetSurgeriesByPet(ctx *gin.Context) {
 	petID, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid pet ID"))
 		return
 	}
 
 	surgeries, err := c.service.GetSurgeriesByPetID(uint(petID))
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
@@ -109,14 +109,14 @@ func (c *SurgeryController) GetSurgeriesByPet(ctx *gin.Context) {
 func (c *SurgeryController) GetSurgeriesByStatus(ctx *gin.Context) {
 	statusStr := ctx.Query("status")
 	if statusStr == "" {
-		utils.RespondWithError(ctx, http.StatusBadRequest, "Status parameter is required")
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Status parameter is required"))
 		return
 	}
 
 	status := domain.SurgeryStatus(statusStr)
 	surgeries, err := c.service.GetSurgeriesByStatus(status)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
@@ -141,25 +141,25 @@ func (c *SurgeryController) GetScheduledSurgeries(ctx *gin.Context) {
 	endDateStr := ctx.Query("end_date")
 
 	if startDateStr == "" || endDateStr == "" {
-		utils.RespondWithError(ctx, http.StatusBadRequest, "start_date and end_date are required")
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("start_date and end_date are required"))
 		return
 	}
 
 	startDate, err := time.Parse("2006-01-02", startDateStr)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, "Invalid start_date format. Use YYYY-MM-DD")
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid start_date format. Use YYYY-MM-DD"))
 		return
 	}
 
 	endDate, err := time.Parse("2006-01-02", endDateStr)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, "Invalid end_date format. Use YYYY-MM-DD")
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid end_date format. Use YYYY-MM-DD"))
 		return
 	}
 
 	surgeries, err := c.service.GetScheduledSurgeries(startDate, endDate)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
@@ -182,16 +182,28 @@ func (c *SurgeryController) GetScheduledSurgeries(ctx *gin.Context) {
 func (c *SurgeryController) CreateSurgery(ctx *gin.Context) {
 	var surgery domain.Surgery
 	if err := ctx.ShouldBindJSON(&surgery); err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithError(ctx, http.StatusBadRequest, "Invalid request format: "+err.Error())
+		return
+	}
+
+	validator := utils.NewValidator()
+	validator.ValidateNumericID("pet_id", surgery.PetID)
+	validator.ValidateNumericID("veterinarian_id", surgery.VeterinarianID)
+	validator.ValidateRequired("surgery_name", surgery.SurgeryName)
+	validator.ValidateInSlice("surgery_type", string(surgery.SurgeryType), []string{"routine", "emergency", "elective"})
+	validator.ValidateInSlice("status", string(surgery.Status), []string{"scheduled", "in_progress", "completed", "cancelled"})
+
+	if !validator.IsValid() {
+		utils.RespondWithValidationError(ctx, validator.Errors)
 		return
 	}
 
 	if err := c.service.CreateSurgery(&surgery); err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
-	utils.RespondWithSuccess(ctx, http.StatusCreated, surgery)
+	utils.RespondWithCreated(ctx, surgery)
 }
 
 // UpdateSurgery updates a surgery by ID
@@ -211,19 +223,37 @@ func (c *SurgeryController) CreateSurgery(ctx *gin.Context) {
 func (c *SurgeryController) UpdateSurgery(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid surgery ID"))
+		return
+	}
+
+	// Check if surgery exists
+	if _, err := c.service.GetSurgeryByID(uint(id)); err != nil {
+		utils.RespondWithAppError(ctx, utils.NewNotFoundError("Surgery"))
 		return
 	}
 
 	var surgery domain.Surgery
 	if err := ctx.ShouldBindJSON(&surgery); err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithError(ctx, http.StatusBadRequest, "Invalid request format: "+err.Error())
+		return
+	}
+
+	validator := utils.NewValidator()
+	validator.ValidateNumericID("pet_id", surgery.PetID)
+	validator.ValidateNumericID("veterinarian_id", surgery.VeterinarianID)
+	validator.ValidateRequired("surgery_name", surgery.SurgeryName)
+	validator.ValidateInSlice("surgery_type", string(surgery.SurgeryType), []string{"routine", "emergency", "elective"})
+	validator.ValidateInSlice("status", string(surgery.Status), []string{"scheduled", "in_progress", "completed", "cancelled"})
+
+	if !validator.IsValid() {
+		utils.RespondWithValidationError(ctx, validator.Errors)
 		return
 	}
 
 	surgery.SurgeryID = uint(id)
 	if err := c.service.UpdateSurgery(&surgery); err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
@@ -241,16 +271,21 @@ func (c *SurgeryController) UpdateSurgery(ctx *gin.Context) {
 // @Failure 400 {object} map[string]string "Invalid surgery ID"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 500 {object} map[string]string "Internal server error"
-// @Router /surgeries/{id}/start [post]
+// @Router /surgeries/{id}/start [patch]
 func (c *SurgeryController) StartSurgery(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid surgery ID"))
+		return
+	}
+
+	if _, err := c.service.GetSurgeryByID(uint(id)); err != nil {
+		utils.RespondWithAppError(ctx, utils.NewNotFoundError("Surgery"))
 		return
 	}
 
 	if err := c.service.StartSurgery(uint(id)); err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
@@ -270,11 +305,16 @@ func (c *SurgeryController) StartSurgery(ctx *gin.Context) {
 // @Failure 400 {object} map[string]string "Invalid request format"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 500 {object} map[string]string "Internal server error"
-// @Router /surgeries/{id}/complete [post]
+// @Router /surgeries/{id}/complete [patch]
 func (c *SurgeryController) CompleteSurgery(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid surgery ID"))
+		return
+	}
+
+	if _, err := c.service.GetSurgeryByID(uint(id)); err != nil {
+		utils.RespondWithAppError(ctx, utils.NewNotFoundError("Surgery"))
 		return
 	}
 
@@ -284,12 +324,12 @@ func (c *SurgeryController) CompleteSurgery(ctx *gin.Context) {
 	}
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithError(ctx, http.StatusBadRequest, "Invalid request format: "+err.Error())
 		return
 	}
 
 	if err := c.service.CompleteSurgery(uint(id), body.PostOpNotes, body.Complications); err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
@@ -307,16 +347,21 @@ func (c *SurgeryController) CompleteSurgery(ctx *gin.Context) {
 // @Failure 400 {object} map[string]string "Invalid surgery ID"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 500 {object} map[string]string "Internal server error"
-// @Router /surgeries/{id}/cancel [post]
+// @Router /surgeries/{id}/cancel [patch]
 func (c *SurgeryController) CancelSurgery(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid surgery ID"))
+		return
+	}
+
+	if _, err := c.service.GetSurgeryByID(uint(id)); err != nil {
+		utils.RespondWithAppError(ctx, utils.NewNotFoundError("Surgery"))
 		return
 	}
 
 	if err := c.service.CancelSurgery(uint(id)); err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
@@ -330,7 +375,7 @@ func (c *SurgeryController) CancelSurgery(ctx *gin.Context) {
 // @Security BearerAuth
 // @Produce json
 // @Param id path int true "Surgery ID"
-// @Success 200 {object} map[string]string "Surgery deleted successfully"
+// @Success 204 "Surgery deleted successfully"
 // @Failure 400 {object} map[string]string "Invalid surgery ID"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 500 {object} map[string]string "Internal server error"
@@ -338,14 +383,19 @@ func (c *SurgeryController) CancelSurgery(ctx *gin.Context) {
 func (c *SurgeryController) DeleteSurgery(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		utils.RespondWithAppError(ctx, utils.NewBadRequestError("Invalid surgery ID"))
+		return
+	}
+
+	if _, err := c.service.GetSurgeryByID(uint(id)); err != nil {
+		utils.RespondWithAppError(ctx, utils.NewNotFoundError("Surgery"))
 		return
 	}
 
 	if err := c.service.DeleteSurgery(uint(id)); err != nil {
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+		utils.RespondWithAppError(ctx, utils.AsAppError(err))
 		return
 	}
 
-	utils.RespondWithSuccess(ctx, http.StatusOK, gin.H{"message": "Surgery deleted successfully"})
+	utils.RespondWithNoContent(ctx)
 }

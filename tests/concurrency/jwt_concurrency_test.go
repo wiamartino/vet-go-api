@@ -9,6 +9,7 @@ import (
 
 // TestJWTConcurrentTokenGeneration tests concurrent token generation
 func TestJWTConcurrentTokenGeneration(t *testing.T) {
+	t.Setenv("JWT_SECRET_KEY", "test_secret_key_concurrency")
 	const numGoroutines = 100
 	tokens := make(chan string, numGoroutines)
 	errors := make(chan error, numGoroutines)
@@ -51,6 +52,7 @@ func TestJWTConcurrentTokenGeneration(t *testing.T) {
 
 // TestJWTConcurrentTokenValidation tests concurrent token validation
 func TestJWTConcurrentTokenValidation(t *testing.T) {
+	t.Setenv("JWT_SECRET_KEY", "test_secret_key_concurrency")
 	// Generate a test token first
 	token, err := jwt.GenerateToken(1, "test@example.com", "user")
 	if err != nil {
@@ -89,6 +91,7 @@ func TestJWTConcurrentTokenValidation(t *testing.T) {
 
 // TestJWTStressTest applies heavy load to JWT operations
 func TestJWTStressTest(t *testing.T) {
+	t.Setenv("JWT_SECRET_KEY", "test_secret_key_concurrency")
 	if testing.Short() {
 		t.Skip("Skipping stress test in short mode")
 	}
