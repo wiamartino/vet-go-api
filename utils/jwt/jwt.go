@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 )
@@ -25,7 +25,7 @@ type Claims struct {
 	UserID uint   `json:"user_id"`
 	Email  string `json:"email"`
 	Role   string `json:"role"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 func init() {
@@ -148,15 +148,16 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 		return "", errors.New("JWT_SECRET_KEY must be set in environment")
 	}
 
-	expirationTime := time.Now().Add(timeout)
+	now := time.Now()
+	expirationTime := now.Add(timeout)
 
 	claims := &Claims{
 		UserID: userID,
 		Email:  email,
 		Role:   role,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
-			IssuedAt:  time.Now().Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+			IssuedAt:  jwt.NewNumericDate(now),
 			Issuer:    issuer,
 			Subject:   email,
 		},

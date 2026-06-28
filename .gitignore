@@ -1,2 +1,26 @@
+# Environment files (may contain secrets)
 .env
+.env.*
+!.env.test.example
+
+# Build output
+bin/
+
+# Coverage reports
+coverage/
+*.out
+
+# OS artifacts
 .DS_Store
+Thumbs.db
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Go
+tmp/
+vendor/

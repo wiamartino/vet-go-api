@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	"os"
+	"strings"
 
 	"go-vet/application"
 	"go-vet/controllers"
@@ -25,9 +26,15 @@ func SetupRouter(db *database.DB) *gin.Engine {
 		panic("Database connection is required!")
 	}
 
-	// CORS
+	// CORS — Note: AllowOrigins: * with AllowCredentials: true is invalid per
+	// the CORS spec and will be rejected by browsers. Use explicit origins.
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"*"}
+	corsOrigins := os.Getenv("CORS_ORIGINS")
+	if corsOrigins != "" {
+		config.AllowOrigins = strings.Split(corsOrigins, ",")
+	} else {
+		config.AllowOrigins = []string{"http://localhost:3000", "http://localhost:8080"}
+	}
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
 	config.AllowCredentials = true
 	config.ExposeHeaders = []string{"Content-Length"}

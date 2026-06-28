@@ -162,8 +162,8 @@ func TestJWTUtils(t *testing.T) {
 		assert.NotNil(t, claims)
 
 		// Check that the expiration time is in the future
-		assert.True(t, time.Unix(claims.ExpiresAt, 0).After(time.Now()))
-		assert.True(t, time.Unix(claims.IssuedAt, 0).Before(time.Now().Add(time.Second)))
+		assert.True(t, claims.ExpiresAt.Time.After(time.Now()))
+		assert.True(t, claims.IssuedAt.Time.Before(time.Now().Add(time.Second)))
 	})
 
 	t.Run("Token claims - should include all required fields", func(t *testing.T) {

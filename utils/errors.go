@@ -108,13 +108,17 @@ func NewBadRequestError(message string) *AppError {
 	}
 }
 
-// NewInternalError creates an internal server error
+// NewInternalError creates an internal server error.
+// The client-facing message is kept generic to avoid leaking implementation details.
+// The original message is stored in Details["internal"] for server-side logging.
 func NewInternalError(message string) *AppError {
 	return &AppError{
 		Type:    InternalError,
 		Message: "An internal error occurred",
 		Code:    "INTERNAL_ERROR",
-		Details: make(map[string]interface{}),
+		Details: map[string]interface{}{
+			"internal": message,
+		},
 	}
 }
 

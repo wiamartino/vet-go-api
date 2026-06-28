@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"net/mail"
 	"regexp"
 	"strings"
@@ -73,7 +74,7 @@ func (v *Validator) ValidateRequired(field, value string) bool {
 // ValidateMinLength validates minimum string length
 func (v *Validator) ValidateMinLength(field, value string, minLength int) bool {
 	if len(strings.TrimSpace(value)) < minLength {
-		v.AddError(field, field+" must be at least "+string(rune(minLength))+" characters")
+		v.AddError(field, fmt.Sprintf("%s must be at least %d characters", field, minLength))
 		return false
 	}
 	return true
@@ -82,7 +83,7 @@ func (v *Validator) ValidateMinLength(field, value string, minLength int) bool {
 // ValidateMaxLength validates maximum string length
 func (v *Validator) ValidateMaxLength(field, value string, maxLength int) bool {
 	if len(value) > maxLength {
-		v.AddError(field, field+" must not exceed "+string(rune(maxLength))+" characters")
+		v.AddError(field, fmt.Sprintf("%s must not exceed %d characters", field, maxLength))
 		return false
 	}
 	return true
@@ -96,11 +97,11 @@ func (v *Validator) ValidateLengthRange(field, value string, minLength, maxLengt
 		return false
 	}
 	if length < minLength {
-		v.AddError(field, field+" must be at least "+string(rune(minLength))+" characters")
+		v.AddError(field, fmt.Sprintf("%s must be at least %d characters", field, minLength))
 		return false
 	}
 	if length > maxLength {
-		v.AddError(field, field+" must not exceed "+string(rune(maxLength))+" characters")
+		v.AddError(field, fmt.Sprintf("%s must not exceed %d characters", field, maxLength))
 		return false
 	}
 	return true
@@ -144,7 +145,7 @@ func (v *Validator) ValidateInSlice(field, value string, validValues []string) b
 // ValidateMinValue validates numeric minimum value
 func (v *Validator) ValidateMinValue(field string, value float64, minValue float64) bool {
 	if value < minValue {
-		v.AddError(field, field+" must be at least "+string(rune(int(minValue))))
+		v.AddError(field, fmt.Sprintf("%s must be at least %g", field, minValue))
 		return false
 	}
 	return true
@@ -153,7 +154,7 @@ func (v *Validator) ValidateMinValue(field string, value float64, minValue float
 // ValidateMaxValue validates numeric maximum value
 func (v *Validator) ValidateMaxValue(field string, value float64, maxValue float64) bool {
 	if value > maxValue {
-		v.AddError(field, field+" must not exceed "+string(rune(int(maxValue))))
+		v.AddError(field, fmt.Sprintf("%s must not exceed %g", field, maxValue))
 		return false
 	}
 	return true
