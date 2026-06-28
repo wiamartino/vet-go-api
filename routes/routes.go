@@ -3,9 +3,9 @@ package routes
 import (
 	"net/http"
 	"os"
-	"strings"
 
 	"go-vet/application"
+	"go-vet/config"
 	"go-vet/controllers"
 	"go-vet/infrastructure/database"
 	"go-vet/infrastructure/repositories"
@@ -28,19 +28,18 @@ func SetupRouter(db *database.DB) *gin.Engine {
 
 	// CORS — Note: AllowOrigins: * with AllowCredentials: true is invalid per
 	// the CORS spec and will be rejected by browsers. Use explicit origins.
-	config := cors.DefaultConfig()
-	corsOrigins := os.Getenv("CORS_ORIGINS")
-	if corsOrigins != "" {
-		config.AllowOrigins = strings.Split(corsOrigins, ",")
+	corsConfig := cors.DefaultConfig()
+	if config.AppConfig != nil && len(config.AppConfig.Security.CORSOrigins) > 0 && config.AppConfig.Security.CORSOrigins[0] != "*" {
+		corsConfig.AllowOrigins = config.AppConfig.Security.CORSOrigins
 	} else {
-		config.AllowOrigins = []string{"http://localhost:3000", "http://localhost:8080"}
+		corsConfig.AllowOrigins = []string{"http://localhost:3000", "http://localhost:8080"}
 	}
-	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
-	config.AllowCredentials = true
-	config.ExposeHeaders = []string{"Content-Length"}
-	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}
+	corsConfig.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
+	corsConfig.AllowCredentials = true
+	corsConfig.ExposeHeaders = []string{"Content-Length"}
+	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}
 
-	r.Use(cors.New(config))
+	r.Use(cors.New(corsConfig))
 	r.Use(middlewares.MetricsMiddleware())
 
 	// Swagger documentation route

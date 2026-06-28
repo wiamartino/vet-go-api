@@ -2,13 +2,13 @@ package database
 
 import (
 	"fmt"
+	"go-vet/config"
 	"go-vet/domain"
 	"log"
 	"os"
 	"sync"
 	"time"
 
-	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -57,12 +57,18 @@ func models() []interface{} {
 	}
 }
 
-// getDSN builds the database connection string from environment variables
+// getDSN builds the database connection string from config.
+// Falls back to os.Getenv for backward compatibility (e.g. integration tests
+// that set env vars directly without calling config.LoadConfig).
 func getDSN() string {
-	if err := godotenv.Load(".env"); err != nil {
-		log.Printf("Warning: Error loading .env file: %v", err)
+	if config.AppConfig != nil {
+		dbCfg := config.AppConfig.Database
+		return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
+			dbCfg.Host, dbCfg.User, dbCfg.Password, dbCfg.Name, dbCfg.Port, dbCfg.SSLMode, dbCfg.TimeZone,
+		)
 	}
 
+	// Fallback for tests that don't load config
 	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
 		os.Getenv("DB_HOST"),
 		os.Getenv("DB_USER"),
@@ -96,6 +102,16 @@ func ConnectDatabase() (*DB, error) {
 	database, err := gorm.Open(postgres.Open(getDSN()), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+
+	// Apply connection pool settings from config (fix #24)
+	if config.AppConfig != nil {
+		sqlDB, err := database.DB()
+		if err == nil {
+			sqlDB.SetMaxOpenConns(config.AppConfig.Database.MaxOpenConns)
+			sqlDB.SetMaxIdleConns(config.AppConfig.Database.MaxIdleConns)
+			sqlDB.SetConnMaxLifetime(config.AppConfig.Database.ConnMaxLifetime)
+		}
 	}
 
 	if err := database.AutoMigrate(models()...); err != nil {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -94,7 +95,7 @@ func LoadConfig() error {
 			PasswordMinLength:  getEnvAsInt("PASSWORD_MIN_LENGTH", 8),
 			BCryptCost:         getEnvAsInt("BCRYPT_COST", 12),
 			RateLimitPerMinute: getEnvAsInt("RATE_LIMIT_PER_MINUTE", 60),
-			CORSOrigins:        []string{getEnv("CORS_ORIGINS", "*")},
+			CORSOrigins:        splitCSV(getEnv("CORS_ORIGINS", "")),
 		},
 	}
 
@@ -128,10 +129,28 @@ func getEnvAsInt(key string, defaultValue int) int {
 	return defaultValue
 }
 
+// splitCSV splits a comma-separated string into a trimmed slice.
+// Returns nil for empty input.
+func splitCSV(s string) []string {
+	if s == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	result := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if trimmed := strings.TrimSpace(p); trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
+}
+
 func IsDevelopment() bool {
-	return AppConfig.Server.Environment == "development"
+	env := AppConfig.Server.Environment
+	return env == "development" || env == "dev"
 }
 
 func IsProduction() bool {
-	return AppConfig.Server.Environment == "production"
+	env := AppConfig.Server.Environment
+	return env == "production" || env == "prod"
 }

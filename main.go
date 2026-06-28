@@ -1,8 +1,7 @@
 package main
 
 import (
-	"os"
-
+	"go-vet/config"
 	"go-vet/infrastructure/database"
 	"go-vet/routes"
 	"go-vet/utils"
@@ -33,7 +32,13 @@ import (
 // @description Type "Bearer" followed by a space and JWT token.
 
 func main() {
-	// Initialize logging first
+	// Load configuration first — this loads .env and parses all settings.
+	// All other packages should read from config.AppConfig instead of os.Getenv.
+	if err := config.LoadConfig(); err != nil {
+		panic("Failed to load configuration: " + err.Error())
+	}
+
+	// Initialize logging using config values
 	utils.SetupLogging()
 
 	// Initialize database connection once
@@ -43,10 +48,9 @@ func main() {
 	}
 
 	// Drop tables and seed database (ONLY in development mode)
-	env := os.Getenv("GO_ENV")
 	// Explicit safeguard: only run in development if explicitly set
 	// Production/empty defaults to safe mode
-	if (env == "development" || env == "dev") && env != "production" && env != "prod" {
+	if config.IsDevelopment() {
 		logrus.Warning("⚠️  Running in DEVELOPMENT mode - dropping and seeding database")
 		logrus.Warning("⚠️  This will DELETE ALL DATA in the database")
 		if err := database.DropAllTablesAndSeed(); err != nil {
@@ -60,11 +64,5 @@ func main() {
 	// Setup router with existing database connection
 	r := routes.SetupRouter(db)
 
-	// Get port from environment or use default
-	port := os.Getenv("SERVER_PORT")
-	if port == "" {
-		port = "8080"
-	}
-
-	r.Run(":" + port)
+	r.Run(":" + config.AppConfig.Server.Port)
 }

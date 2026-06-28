@@ -7,8 +7,9 @@ import (
 	"sync"
 	"time"
 
+	"go-vet/config"
+
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,7 +17,6 @@ var (
 	jwtKey        []byte
 	jwtIssuer     string
 	jwtTimeout    time.Duration
-	once          sync.Once
 	mu            sync.RWMutex
 	isInitialized bool
 )
@@ -28,54 +28,42 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func init() {
-	// Try to initialize, but don't fail if JWT_SECRET_KEY is not set
-	// This allows tests to run without having to set environment variables globally
-	initializeJWT()
-}
-
-func initializeJWT() {
-	once.Do(func() {
-		loadJWTConfig()
-	})
-}
-
-// loadJWTConfig loads JWT configuration from environment variables
-// This is separated from initializeJWT to allow testing
-func loadJWTConfig() {
-	// Load environment variables
-	err := godotenv.Load()
-	if err != nil {
-		logrus.Warning("Error loading .env file, using default values")
-	}
-
-	// Get JWT secret key
-	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
-	if jwtSecretKey == "" {
-		// Don't fail immediately - allow lazy initialization when key is set
-		mu.Lock()
-		isInitialized = false
-		mu.Unlock()
-		return
-	}
-
+// InitFromConfig initializes JWT settings from the centralized config.
+// Called automatically the first time a token is generated or validated.
+func initFromConfig() {
 	mu.Lock()
 	defer mu.Unlock()
 
-	jwtKey = []byte(jwtSecretKey)
-	isInitialized = true
+	if isInitialized {
+		return
+	}
 
-	// Get JWT issuer (optional)
+	// Prefer config.AppConfig if it has been loaded (normal app startup)
+	if config.AppConfig != nil && config.AppConfig.JWT.SecretKey != "" {
+		jwtKey = []byte(config.AppConfig.JWT.SecretKey)
+		jwtIssuer = config.AppConfig.JWT.Issuer
+		jwtTimeout = config.AppConfig.JWT.Timeout
+		isInitialized = true
+		return
+	}
+
+	// Fallback: read env vars directly (for tests that don't load config)
+	secretKey := os.Getenv("JWT_SECRET_KEY")
+	if secretKey == "" {
+		return // Will fail later with a clear error when GenerateToken is called
+	}
+
+	jwtKey = []byte(secretKey)
+
 	jwtIssuer = os.Getenv("JWT_ISSUER")
 	if jwtIssuer == "" {
 		jwtIssuer = "vet-go-api"
 		logrus.Info("JWT_ISSUER not set, using default: ", jwtIssuer)
 	}
 
-	// Get JWT timeout (optional)
 	jwtTimeoutStr := os.Getenv("JWT_TIMEOUT_HOURS")
 	if jwtTimeoutStr == "" {
-		jwtTimeout = 24 * time.Hour // Default to 24 hours
+		jwtTimeout = 24 * time.Hour
 		logrus.Info("JWT_TIMEOUT_HOURS not set, using default: 24 hours")
 	} else {
 		var timeoutHours int
@@ -87,65 +75,40 @@ func loadJWTConfig() {
 			jwtTimeout = time.Duration(timeoutHours) * time.Hour
 		}
 	}
+
+	isInitialized = true
+}
+
+// ensureInitialized makes sure JWT is configured before use.
+// Returns the current key, issuer, and timeout under a read lock.
+func ensureInitialized() (key []byte, issuer string, timeout time.Duration, err error) {
+	// Fast path: already initialized
+	mu.RLock()
+	if isInitialized {
+		key, issuer, timeout = jwtKey, jwtIssuer, jwtTimeout
+		mu.RUnlock()
+		return
+	}
+	mu.RUnlock()
+
+	// Slow path: initialize
+	initFromConfig()
+
+	mu.RLock()
+	defer mu.RUnlock()
+	if !isInitialized || len(jwtKey) == 0 {
+		err = errors.New("JWT_SECRET_KEY must be set in environment or config")
+		return
+	}
+	key, issuer, timeout = jwtKey, jwtIssuer, jwtTimeout
+	return
 }
 
 // GenerateToken creates a new JWT token for a user
 func GenerateToken(userID uint, email string, role string) (string, error) {
-	// Ensure JWT is initialized
-	initializeJWT()
-
-	// Get all config values under a single read lock
-	mu.RLock()
-	key := jwtKey
-	issuer := jwtIssuer
-	timeout := jwtTimeout
-	initialized := isInitialized
-	mu.RUnlock()
-
-	// If not initialized, try one more time with write lock
-	if !initialized {
-		mu.Lock()
-		// Check again after acquiring write lock
-		if !isInitialized {
-			jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
-			if jwtSecretKey != "" {
-				jwtKey = []byte(jwtSecretKey)
-
-				jwtIssuer = os.Getenv("JWT_ISSUER")
-				if jwtIssuer == "" {
-					jwtIssuer = "vet-go-api"
-				}
-
-				jwtTimeoutStr := os.Getenv("JWT_TIMEOUT_HOURS")
-				if jwtTimeoutStr == "" {
-					jwtTimeout = 24 * time.Hour
-				} else {
-					var timeoutHours int
-					_, err := fmt.Sscanf(jwtTimeoutStr, "%d", &timeoutHours)
-					if err != nil {
-						jwtTimeout = 24 * time.Hour
-					} else {
-						jwtTimeout = time.Duration(timeoutHours) * time.Hour
-					}
-				}
-
-				isInitialized = true
-				key = jwtKey
-				issuer = jwtIssuer
-				timeout = jwtTimeout
-			}
-		} else {
-			// Another goroutine initialized it
-			key = jwtKey
-			issuer = jwtIssuer
-			timeout = jwtTimeout
-		}
-		mu.Unlock()
-	}
-
-	// Fail if JWT key is not initialized
-	if len(key) == 0 {
-		return "", errors.New("JWT_SECRET_KEY must be set in environment")
+	key, issuer, timeout, err := ensureInitialized()
+	if err != nil {
+		return "", err
 	}
 
 	now := time.Now()
@@ -174,12 +137,12 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 
 // ValidateToken validates a JWT token and returns the claims
 func ValidateToken(tokenString string) (*Claims, error) {
+	key, _, _, err := ensureInitialized()
+	if err != nil {
+		return nil, err
+	}
+
 	claims := &Claims{}
-
-	mu.RLock()
-	key := jwtKey
-	mu.RUnlock()
-
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		// Validate the signing method
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -196,9 +159,6 @@ func ValidateToken(tokenString string) (*Claims, error) {
 		return nil, errors.New("invalid token")
 	}
 
-	// Note: Expiration is already validated by jwt.ParseWithClaims
-	// The library automatically checks ExpiresAt and returns an error if expired
-
 	return claims, nil
 }
 
@@ -211,4 +171,15 @@ func RefreshToken(tokenString string) (string, error) {
 
 	// Generate a new token with the same user information but updated expiry
 	return GenerateToken(claims.UserID, claims.Email, claims.Role)
+}
+
+// ResetForTesting allows tests to re-initialize JWT config.
+// This should only be called in test code.
+func ResetForTesting() {
+	mu.Lock()
+	defer mu.Unlock()
+	isInitialized = false
+	jwtKey = nil
+	jwtIssuer = ""
+	jwtTimeout = 0
 }
